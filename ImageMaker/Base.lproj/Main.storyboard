@@ -31,43 +31,86 @@
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yz9-lt-fR1" userLabel="WorkImageContainer">
                                                 <rect key="frame" x="0.0" y="0.0" width="321" height="339"/>
                                                 <subviews>
-                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="center" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="Qbv-ga-aPm">
-                                                        <rect key="frame" x="8" y="16" width="305" height="291"/>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4FQ-It-hgT">
+                                                        <rect key="frame" x="8" y="8" width="305" height="323"/>
                                                         <subviews>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="250" text="Choose new picthure:" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vxe-t4-ZfS">
-                                                                <rect key="frame" x="65.5" y="0.0" width="174.5" height="58"/>
-                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
-                                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                <nil key="highlightedColor"/>
-                                                            </label>
-                                                            <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="250" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" adjustsImageSizeForAccessibilityContentSizeCategory="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jRF-ZX-Mlv">
-                                                                <rect key="frame" x="95.5" y="78" width="114" height="57.5"/>
-                                                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                <state key="normal" title="Load from Photo"/>
-                                                            </button>
-                                                            <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="250" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="an9-s9-8gI">
-                                                                <rect key="frame" x="110.5" y="155.5" width="84" height="58"/>
-                                                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                <state key="normal" title="Use Camera"/>
-                                                            </button>
-                                                            <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="250" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5Ye-Ro-nqW">
-                                                                <rect key="frame" x="111.5" y="233.5" width="82" height="57.5"/>
-                                                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                <state key="normal" title="Load by link"/>
-                                                            </button>
+                                                            <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Mwy-wz-b5A">
+                                                                <rect key="frame" x="0.0" y="0.0" width="305" height="323"/>
+                                                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="HbY-6E-JDN">
+                                                                    <rect key="frame" x="0.0" y="0.0" width="305" height="323"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                                    <subviews>
+                                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="250" text="Choose new picthure:" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="vxe-t4-ZfS">
+                                                                            <rect key="frame" x="10" y="65" width="285" height="31.5"/>
+                                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
+                                                                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                            <nil key="highlightedColor"/>
+                                                                        </label>
+                                                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lua-cJ-QyO">
+                                                                            <rect key="frame" x="129.5" y="146.5" width="46" height="30"/>
+                                                                            <constraints>
+                                                                                <constraint firstAttribute="width" secondItem="lua-cJ-QyO" secondAttribute="height" multiplier="23:15" id="BCa-6i-Mn5"/>
+                                                                            </constraints>
+                                                                            <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                                            <state key="normal" title="Button"/>
+                                                                        </button>
+                                                                    </subviews>
+                                                                    <gestureRecognizers/>
+                                                                    <constraints>
+                                                                        <constraint firstItem="lua-cJ-QyO" firstAttribute="centerY" secondItem="HbY-6E-JDN" secondAttribute="centerY" id="RBr-Wh-wlc"/>
+                                                                        <constraint firstItem="lua-cJ-QyO" firstAttribute="centerX" secondItem="HbY-6E-JDN" secondAttribute="centerX" id="TBR-hw-MMn"/>
+                                                                        <constraint firstItem="vxe-t4-ZfS" firstAttribute="centerX" secondItem="HbY-6E-JDN" secondAttribute="centerX" id="Tlo-2p-K8c"/>
+                                                                        <constraint firstItem="vxe-t4-ZfS" firstAttribute="centerY" secondItem="HbY-6E-JDN" secondAttribute="centerY" multiplier="1/2" id="jiL-jM-CPh"/>
+                                                                        <constraint firstItem="vxe-t4-ZfS" firstAttribute="leading" secondItem="HbY-6E-JDN" secondAttribute="leading" constant="10" id="k4r-8l-ChO"/>
+                                                                        <constraint firstAttribute="trailing" secondItem="vxe-t4-ZfS" secondAttribute="trailing" constant="10" id="mFc-6M-V5j"/>
+                                                                    </constraints>
+                                                                    <userDefinedRuntimeAttributes>
+                                                                        <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                                                        <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                                            <integer key="value" value="35"/>
+                                                                        </userDefinedRuntimeAttribute>
+                                                                    </userDefinedRuntimeAttributes>
+                                                                </view>
+                                                                <gestureRecognizers/>
+                                                                <blurEffect style="light"/>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                                        <integer key="value" value="16"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
+                                                            </visualEffectView>
                                                         </subviews>
-                                                    </stackView>
+                                                        <color key="backgroundColor" red="0.84465640779999995" green="0.51457053419999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <gestureRecognizers/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="bottom" secondItem="Mwy-wz-b5A" secondAttribute="bottom" id="Ja3-sg-QvJ"/>
+                                                            <constraint firstAttribute="trailing" secondItem="Mwy-wz-b5A" secondAttribute="trailing" id="M8R-2m-EZV"/>
+                                                            <constraint firstItem="Mwy-wz-b5A" firstAttribute="leading" secondItem="4FQ-It-hgT" secondAttribute="leading" id="Oks-pB-koj"/>
+                                                            <constraint firstItem="Mwy-wz-b5A" firstAttribute="top" secondItem="4FQ-It-hgT" secondAttribute="top" id="ued-Zh-rAF"/>
+                                                        </constraints>
+                                                        <userDefinedRuntimeAttributes>
+                                                            <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBouns" value="YES"/>
+                                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                                <integer key="value" value="16"/>
+                                                            </userDefinedRuntimeAttribute>
+                                                        </userDefinedRuntimeAttributes>
+                                                        <connections>
+                                                            <outletCollection property="gestureRecognizers" destination="9vu-gZ-z06" appends="YES" id="Sov-kQ-oW3"/>
+                                                        </connections>
+                                                    </view>
                                                 </subviews>
                                                 <color key="backgroundColor" red="0.2784313725" green="0.50588235290000005" blue="0.73725490199999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <gestureRecognizers/>
                                                 <constraints>
-                                                    <constraint firstAttribute="trailing" secondItem="Qbv-ga-aPm" secondAttribute="trailing" constant="8" id="4ez-iF-mYB"/>
-                                                    <constraint firstItem="Qbv-ga-aPm" firstAttribute="top" secondItem="yz9-lt-fR1" secondAttribute="top" constant="16" id="TG3-3B-OIw"/>
-                                                    <constraint firstAttribute="bottom" secondItem="Qbv-ga-aPm" secondAttribute="bottom" constant="32" id="fam-Zo-nFm"/>
-                                                    <constraint firstItem="Qbv-ga-aPm" firstAttribute="leading" secondItem="yz9-lt-fR1" secondAttribute="leading" constant="8" id="kc8-aU-Wrb"/>
+                                                    <constraint firstItem="4FQ-It-hgT" firstAttribute="leading" secondItem="yz9-lt-fR1" secondAttribute="leading" constant="8" id="3s0-SD-1Sg"/>
+                                                    <constraint firstAttribute="bottom" secondItem="4FQ-It-hgT" secondAttribute="bottom" constant="8" id="RS8-Tg-Wzq"/>
+                                                    <constraint firstAttribute="trailing" secondItem="4FQ-It-hgT" secondAttribute="trailing" constant="8" id="oYQ-6c-IJk"/>
+                                                    <constraint firstItem="4FQ-It-hgT" firstAttribute="top" secondItem="yz9-lt-fR1" secondAttribute="top" constant="8" id="qSJ-US-r2E"/>
                                                 </constraints>
+                                                <connections>
+                                                    <outletCollection property="gestureRecognizers" destination="sQa-ia-kgB" appends="YES" id="e1y-He-27X"/>
+                                                </connections>
                                             </view>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="jIR-Wk-Ge5">
                                                 <rect key="frame" x="329" y="101.5" width="69" height="136"/>
@@ -174,12 +217,20 @@
                         </variation>
                     </view>
                     <connections>
-                        <outlet property="loadByLinkButton" destination="5Ye-Ro-nqW" id="ytj-yG-SOT"/>
-                        <outlet property="takeFromPhotoButton" destination="jRF-ZX-Mlv" id="RDZ-Ju-lbH"/>
-                        <outlet property="useCameraButton" destination="an9-s9-8gI" id="vhS-Xm-ZfX"/>
+                        <outlet property="choosePicthureContainerView" destination="4FQ-It-hgT" id="A8J-pu-mHw"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+                <tapGestureRecognizer id="sQa-ia-kgB">
+                    <connections>
+                        <action selector="tapWorksImageView:" destination="BYZ-38-t0r" id="Ok2-ZF-531"/>
+                    </connections>
+                </tapGestureRecognizer>
+                <tapGestureRecognizer id="9vu-gZ-z06">
+                    <connections>
+                        <action selector="tapWorksImageView:" destination="BYZ-38-t0r" id="Jct-t3-RWV"/>
+                    </connections>
+                </tapGestureRecognizer>
             </objects>
             <point key="canvasLocation" x="134.78260869565219" y="136.60714285714286"/>
         </scene>
