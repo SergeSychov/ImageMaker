@@ -34,10 +34,7 @@ class ViewController: UIViewController {
             }) { (Bool) in
                 self.choosePicthureContainerView.isHidden = true
             }
-            
         }
     }
-    
-
 }
 
