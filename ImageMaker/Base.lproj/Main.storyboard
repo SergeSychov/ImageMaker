@@ -34,26 +34,29 @@
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="center" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="Qbv-ga-aPm">
                                                         <rect key="frame" x="8" y="16" width="305" height="291"/>
                                                         <subviews>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="250" text="Choose new picthure:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="vxe-t4-ZfS">
-                                                                <rect key="frame" x="69" y="0.0" width="167" height="58"/>
-                                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="250" text="Choose new picthure:" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vxe-t4-ZfS">
+                                                                <rect key="frame" x="65.5" y="0.0" width="174.5" height="58"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="250" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" adjustsImageSizeForAccessibilityContentSizeCategory="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jRF-ZX-Mlv">
-                                                                <rect key="frame" x="41.5" y="78" width="222" height="57.5"/>
+                                                                <rect key="frame" x="95.5" y="78" width="114" height="57.5"/>
+                                                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                                                 <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                <state key="normal" title="Load from Photo and more more"/>
+                                                                <state key="normal" title="Load from Photo"/>
                                                             </button>
                                                             <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="250" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="an9-s9-8gI">
-                                                                <rect key="frame" x="41.5" y="155.5" width="222" height="58"/>
+                                                                <rect key="frame" x="110.5" y="155.5" width="84" height="58"/>
+                                                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                                                 <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                <state key="normal" title="Use Camera and more and more"/>
+                                                                <state key="normal" title="Use Camera"/>
                                                             </button>
                                                             <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="250" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5Ye-Ro-nqW">
-                                                                <rect key="frame" x="43" y="233.5" width="219" height="57.5"/>
+                                                                <rect key="frame" x="111.5" y="233.5" width="82" height="57.5"/>
+                                                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                                                 <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                <state key="normal" title="Load by link and more and more"/>
+                                                                <state key="normal" title="Load by link"/>
                                                             </button>
                                                         </subviews>
                                                     </stackView>
@@ -67,18 +70,20 @@
                                                 </constraints>
                                             </view>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="jIR-Wk-Ge5">
-                                                <rect key="frame" x="329" y="104.5" width="69" height="130"/>
+                                                <rect key="frame" x="329" y="101.5" width="69" height="136"/>
                                                 <subviews>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="spT-81-HHe">
-                                                        <rect key="frame" x="0.0" y="0.0" width="69" height="30"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="69" height="32"/>
                                                         <state key="normal" title="Rotate"/>
                                                     </button>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ZEm-fK-947">
-                                                        <rect key="frame" x="0.0" y="50" width="69" height="30"/>
+                                                        <rect key="frame" x="0.0" y="52" width="69" height="32"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                                        <size key="titleShadowOffset" width="0.0" height="1"/>
                                                         <state key="normal" title="CutColors"/>
                                                     </button>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DBN-la-SX7">
-                                                        <rect key="frame" x="0.0" y="100" width="69" height="30"/>
+                                                        <rect key="frame" x="0.0" y="104" width="69" height="32"/>
                                                         <state key="normal" title="Mirrow"/>
                                                     </button>
                                                 </subviews>
@@ -168,6 +173,11 @@
                             </mask>
                         </variation>
                     </view>
+                    <connections>
+                        <outlet property="loadByLinkButton" destination="5Ye-Ro-nqW" id="ytj-yG-SOT"/>
+                        <outlet property="takeFromPhotoButton" destination="jRF-ZX-Mlv" id="RDZ-Ju-lbH"/>
+                        <outlet property="useCameraButton" destination="an9-s9-8gI" id="vhS-Xm-ZfX"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
