@@ -23,12 +23,11 @@
                                 <color key="backgroundColor" red="1" green="0.49327188729999999" blue="0.47399842739999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Zqe-vT-Qlz" userLabel="Works">
-                                <rect key="frame" x="20" y="20" width="374" height="304.33333333333331"/>
+                                <rect key="frame" x="0.0" y="20" width="414" height="304.33333333333331"/>
                                 <color key="backgroundColor" red="0.40000000600000002" green="1" blue="0.40000000600000002" alpha="1" colorSpace="calibratedRGB"/>
-                                <viewLayoutGuide key="safeArea" id="uGW-sS-QTl"/>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jhN-me-2oV" userLabel="Result">
-                                <rect key="frame" x="20" y="411.66666666666674" width="374" height="304.33333333333326"/>
+                                <rect key="frame" x="0.0" y="411.66666666666674" width="414" height="324.33333333333326"/>
                                 <color key="backgroundColor" red="1" green="1" blue="0.40000000600000002" alpha="1" colorSpace="calibratedRGB"/>
                             </view>
                         </subviews>
@@ -37,13 +36,13 @@
                             <constraint firstItem="jhN-me-2oV" firstAttribute="top" secondItem="Zqe-vT-Qlz" secondAttribute="top" id="0qg-Qg-kBl"/>
                             <constraint firstItem="jhN-me-2oV" firstAttribute="trailing" secondItem="Zqe-vT-Qlz" secondAttribute="trailing" id="1wT-tS-Ons"/>
                             <constraint firstItem="F8P-MF-1LV" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="8SU-LX-Xfa"/>
-                            <constraint firstItem="jhN-me-2oV" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="IDY-3n-cH8"/>
+                            <constraint firstItem="jhN-me-2oV" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="IDY-3n-cH8"/>
                             <constraint firstItem="F8P-MF-1LV" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="IMY-me-qaA"/>
                             <constraint firstItem="F8P-MF-1LV" firstAttribute="leading" secondItem="Zqe-vT-Qlz" secondAttribute="trailing" constant="8" symbolic="YES" id="IQl-FL-qVO"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="jhN-me-2oV" secondAttribute="bottom" constant="2" id="IWF-lj-6G4"/>
                             <constraint firstItem="F8P-MF-1LV" firstAttribute="height" secondItem="6Tk-OE-BBY" secondAttribute="height" multiplier="1/10" id="J36-o9-M45"/>
                             <constraint firstItem="F8P-MF-1LV" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="PHk-6N-hmm"/>
-                            <constraint firstItem="Zqe-vT-Qlz" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="PSn-AG-r4y"/>
+                            <constraint firstItem="Zqe-vT-Qlz" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="PSn-AG-r4y"/>
                             <constraint firstItem="F8P-MF-1LV" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="YCl-yX-00Z"/>
                             <constraint firstItem="jhN-me-2oV" firstAttribute="top" secondItem="F8P-MF-1LV" secondAttribute="top" id="cGy-KV-dFw"/>
                             <constraint firstItem="jhN-me-2oV" firstAttribute="leading" secondItem="Zqe-vT-Qlz" secondAttribute="leading" id="eE5-ZP-enj"/>
@@ -53,7 +52,7 @@
                             <constraint firstItem="Zqe-vT-Qlz" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="hx9-Tb-lCe"/>
                             <constraint firstItem="F8P-MF-1LV" firstAttribute="top" secondItem="Zqe-vT-Qlz" secondAttribute="bottom" constant="8" symbolic="YES" id="isW-24-NkH"/>
                             <constraint firstItem="F8P-MF-1LV" firstAttribute="width" secondItem="6Tk-OE-BBY" secondAttribute="width" multiplier="1/10" id="kux-3y-6IY"/>
-                            <constraint firstAttribute="bottom" secondItem="jhN-me-2oV" secondAttribute="bottom" constant="20" symbolic="YES" id="nBc-S8-2rz"/>
+                            <constraint firstAttribute="bottom" secondItem="jhN-me-2oV" secondAttribute="bottom" id="nBc-S8-2rz"/>
                             <constraint firstItem="jhN-me-2oV" firstAttribute="leading" secondItem="F8P-MF-1LV" secondAttribute="trailing" constant="8" symbolic="YES" id="qi4-Gp-tdO"/>
                             <constraint firstItem="jhN-me-2oV" firstAttribute="bottom" secondItem="Zqe-vT-Qlz" secondAttribute="bottom" id="vzz-Cr-yul"/>
                         </constraints>
