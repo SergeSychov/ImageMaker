@@ -11,6 +11,7 @@ import UIKit
 class ViewController: UIViewController {
 
     @IBOutlet weak var choosePicthureContainerView: UIView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         choosePicthureContainerView.isHidden = true
