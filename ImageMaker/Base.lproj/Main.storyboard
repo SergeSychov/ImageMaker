@@ -21,12 +21,15 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Zqe-vT-Qlz" userLabel="Works">
                                 <rect key="frame" x="0.0" y="20" width="375" height="323.5"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="aZc-yt-mDy">
+                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="aZc-yt-mDy">
                                         <rect key="frame" x="8" y="8" width="359" height="243"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yz9-lt-fR1" userLabel="WorkImageContainer">
                                                 <rect key="frame" x="0.0" y="0.0" width="278" height="243"/>
                                                 <subviews>
+                                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="250" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="v5g-K4-QXv">
+                                                        <rect key="frame" x="0.0" y="0.0" width="278" height="243"/>
+                                                    </imageView>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4FQ-It-hgT">
                                                         <rect key="frame" x="8" y="8" width="262" height="227"/>
                                                         <subviews>
@@ -48,7 +51,10 @@
                                                                                 <constraint firstAttribute="width" secondItem="lua-cJ-QyO" secondAttribute="height" multiplier="23:15" id="BCa-6i-Mn5"/>
                                                                             </constraints>
                                                                             <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                                                            <state key="normal" title="Button"/>
+                                                                            <state key="normal" title="Plus"/>
+                                                                            <connections>
+                                                                                <action selector="plusButtonTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="wsW-kE-R36"/>
+                                                                            </connections>
                                                                         </button>
                                                                     </subviews>
                                                                     <gestureRecognizers/>
@@ -77,7 +83,7 @@
                                                                 </userDefinedRuntimeAttributes>
                                                             </visualEffectView>
                                                         </subviews>
-                                                        <color key="backgroundColor" red="0.84465640779999995" green="0.51457053419999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <gestureRecognizers/>
                                                         <constraints>
                                                             <constraint firstAttribute="bottom" secondItem="Mwy-wz-b5A" secondAttribute="bottom" id="Ja3-sg-QvJ"/>
@@ -96,39 +102,54 @@
                                                         </connections>
                                                     </view>
                                                 </subviews>
-                                                <color key="backgroundColor" red="0.2784313725" green="0.50588235290000005" blue="0.73725490199999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <gestureRecognizers/>
                                                 <constraints>
                                                     <constraint firstItem="4FQ-It-hgT" firstAttribute="leading" secondItem="yz9-lt-fR1" secondAttribute="leading" constant="8" id="3s0-SD-1Sg"/>
-                                                    <constraint firstAttribute="bottom" secondItem="4FQ-It-hgT" secondAttribute="bottom" constant="8" id="RS8-Tg-Wzq"/>
+                                                    <constraint firstItem="v5g-K4-QXv" firstAttribute="centerX" secondItem="yz9-lt-fR1" secondAttribute="centerX" id="8wD-YB-0Fv"/>
+                                                    <constraint firstAttribute="bottom" secondItem="4FQ-It-hgT" secondAttribute="bottom" constant="8" id="b7N-QJ-j6b"/>
+                                                    <constraint firstItem="v5g-K4-QXv" firstAttribute="width" relation="lessThanOrEqual" secondItem="yz9-lt-fR1" secondAttribute="width" id="bit-H8-A8o"/>
+                                                    <constraint firstItem="v5g-K4-QXv" firstAttribute="centerY" secondItem="yz9-lt-fR1" secondAttribute="centerY" id="fPV-tK-09f"/>
                                                     <constraint firstAttribute="trailing" secondItem="4FQ-It-hgT" secondAttribute="trailing" constant="8" id="oYQ-6c-IJk"/>
                                                     <constraint firstItem="4FQ-It-hgT" firstAttribute="top" secondItem="yz9-lt-fR1" secondAttribute="top" constant="8" id="qSJ-US-r2E"/>
+                                                    <constraint firstItem="v5g-K4-QXv" firstAttribute="height" secondItem="yz9-lt-fR1" secondAttribute="height" id="sfu-tT-uWL"/>
                                                 </constraints>
                                                 <connections>
                                                     <outletCollection property="gestureRecognizers" destination="sQa-ia-kgB" appends="YES" id="e1y-He-27X"/>
                                                 </connections>
                                             </view>
-                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="jIR-Wk-Ge5">
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="center" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="jIR-Wk-Ge5">
                                                 <rect key="frame" x="286" y="53.5" width="73" height="136"/>
                                                 <subviews>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="spT-81-HHe">
-                                                        <rect key="frame" x="0.0" y="0.0" width="73" height="32"/>
+                                                    <button opaque="NO" contentMode="scaleToFill" restorationIdentifier="Rotate" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="spT-81-HHe">
+                                                        <rect key="frame" x="14" y="0.0" width="45" height="32"/>
                                                         <state key="normal" title="Rotate"/>
+                                                        <connections>
+                                                            <action selector="convertImageAction:" destination="BYZ-38-t0r" eventType="touchUpInside" id="wN8-Oq-gms"/>
+                                                        </connections>
                                                     </button>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ZEm-fK-947">
+                                                    <button opaque="NO" contentMode="scaleToFill" restorationIdentifier="CutColors" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ZEm-fK-947">
                                                         <rect key="frame" x="0.0" y="52" width="73" height="32"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                                         <size key="titleShadowOffset" width="0.0" height="1"/>
                                                         <state key="normal" title="CutColors"/>
+                                                        <connections>
+                                                            <action selector="convertImageAction:" destination="BYZ-38-t0r" eventType="touchUpInside" id="h9s-I4-aG2"/>
+                                                        </connections>
                                                     </button>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DBN-la-SX7">
-                                                        <rect key="frame" x="0.0" y="104" width="73" height="32"/>
-                                                        <state key="normal" title="Mirrow"/>
+                                                    <button opaque="NO" contentMode="scaleToFill" restorationIdentifier="Mirror" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DBN-la-SX7">
+                                                        <rect key="frame" x="15.5" y="104" width="42" height="32"/>
+                                                        <state key="normal" title="Mirror"/>
+                                                        <connections>
+                                                            <action selector="convertImageAction:" destination="BYZ-38-t0r" eventType="touchUpInside" id="wk8-yg-L3a"/>
+                                                        </connections>
                                                     </button>
                                                 </subviews>
                                             </stackView>
                                         </subviews>
                                         <constraints>
+                                            <constraint firstAttribute="trailing" secondItem="jIR-Wk-Ge5" secondAttribute="trailing" id="WOX-YB-vH6"/>
+                                            <constraint firstItem="jIR-Wk-Ge5" firstAttribute="leading" secondItem="yz9-lt-fR1" secondAttribute="trailing" constant="8" id="aDi-Rc-W6A"/>
                                             <constraint firstItem="jIR-Wk-Ge5" firstAttribute="centerY" secondItem="aZc-yt-mDy" secondAttribute="centerY" id="lvH-v5-kUd"/>
                                             <constraint firstItem="yz9-lt-fR1" firstAttribute="top" secondItem="aZc-yt-mDy" secondAttribute="top" id="xd0-cH-0g5"/>
                                         </constraints>
@@ -177,25 +198,24 @@
                                         <rect key="frame" x="8" y="8" width="359" height="243"/>
                                         <subviews>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="Rn4-m1-ehg">
-                                                <rect key="frame" x="0.0" y="105.5" width="114.5" height="32"/>
+                                                <rect key="frame" x="0.0" y="105.5" width="111" height="32"/>
                                                 <subviews>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9na-9T-fox">
-                                                        <rect key="frame" x="0.0" y="0.0" width="114.5" height="32"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="111" height="32"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                                         <size key="titleShadowOffset" width="0.0" height="1"/>
-                                                        <state key="normal" title="CutColors"/>
+                                                        <state key="normal" title="Share"/>
                                                     </button>
                                                 </subviews>
                                             </stackView>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XeY-Lr-Ojy" userLabel="WorkImageContainer">
-                                                <rect key="frame" x="122.5" y="0.0" width="236.5" height="243"/>
-                                                <color key="backgroundColor" red="0.2784313725" green="0.50588235290000005" blue="0.73725490199999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                <gestureRecognizers/>
-                                            </view>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="mFc-Ns-DBA">
+                                                <rect key="frame" x="119" y="0.0" width="240" height="243"/>
+                                            </imageView>
                                         </subviews>
                                         <constraints>
+                                            <constraint firstAttribute="bottom" secondItem="mFc-Ns-DBA" secondAttribute="bottom" id="3ua-L8-vCM"/>
                                             <constraint firstItem="Rn4-m1-ehg" firstAttribute="centerY" secondItem="2XF-9D-UFD" secondAttribute="centerY" id="XYS-qo-rTR"/>
-                                            <constraint firstItem="XeY-Lr-Ojy" firstAttribute="top" secondItem="2XF-9D-UFD" secondAttribute="top" id="okq-dM-JtK"/>
+                                            <constraint firstItem="mFc-Ns-DBA" firstAttribute="top" secondItem="2XF-9D-UFD" secondAttribute="top" id="si0-vi-1yS"/>
                                         </constraints>
                                     </stackView>
                                 </subviews>
@@ -231,26 +251,28 @@
                         <variation key="default">
                             <mask key="constraints">
                                 <exclude reference="5wn-MC-Q5X"/>
+                                <exclude reference="kvY-3y-DiH"/>
                                 <exclude reference="9TB-Ax-pLS"/>
                                 <exclude reference="dUB-af-AaW"/>
-                                <exclude reference="kvY-3y-DiH"/>
                             </mask>
                         </variation>
                         <variation key="heightClass=compact">
                             <mask key="constraints">
                                 <include reference="5wn-MC-Q5X"/>
+                                <exclude reference="OBH-78-He7"/>
+                                <exclude reference="PSn-AG-r4y"/>
+                                <include reference="kvY-3y-DiH"/>
                                 <include reference="9TB-Ax-pLS"/>
                                 <exclude reference="ErM-P3-EsK"/>
                                 <include reference="dUB-af-AaW"/>
                                 <exclude reference="zLf-dF-M1G"/>
-                                <exclude reference="OBH-78-He7"/>
-                                <exclude reference="PSn-AG-r4y"/>
-                                <include reference="kvY-3y-DiH"/>
                             </mask>
                         </variation>
                     </view>
                     <connections>
                         <outlet property="choosePicthureContainerView" destination="4FQ-It-hgT" id="A8J-pu-mHw"/>
+                        <outlet property="resultImageView" destination="mFc-Ns-DBA" id="p2C-BU-Xoa"/>
+                        <outlet property="workImageView" destination="v5g-K4-QXv" id="GHB-Be-VXj"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -265,7 +287,7 @@
                     </connections>
                 </tapGestureRecognizer>
             </objects>
-            <point key="canvasLocation" x="134.59821428571428" y="136.23188405797103"/>
+            <point key="canvasLocation" x="133.59999999999999" y="135.38230884557723"/>
         </scene>
     </scenes>
 </document>
