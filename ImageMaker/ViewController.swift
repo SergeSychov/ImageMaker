@@ -8,10 +8,11 @@
 
 import UIKit
 
-class ViewController: UIViewController, UIPopoverPresentationControllerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
-
+class ViewController: UIViewController, UIPopoverPresentationControllerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate, ImageConvectorProcessDelegate {
+    
     @IBOutlet weak var workImageView: UIImageView!
     @IBOutlet weak var resultImageView: UIImageView!
+    var resStorage = [ResultImageObj]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,11 +23,24 @@ class ViewController: UIViewController, UIPopoverPresentationControllerDelegate,
     
     //convert image actions
     @IBAction func convertImageAction(_ sender: UIButton) {
-        if sender.restorationIdentifier != nil {
-            resultImageView.image = ImageConvertor.convertImage(workImageView.image, sender.restorationIdentifier!)
+
+        if sender.restorationIdentifier != nil  && workImageView.image != nil{
+            let resImgObj = ResultImageObj(workImageView.image!, sender.restorationIdentifier!)
+            resStorage.append(resImgObj)
+            if resImgObj.resultImg != nil {
+                resultImageView.image = resImgObj.resultImg
+            }
         }
     }
     
+    //ImageConvectorProcessDelegate
+    func getDataFromImageConvectorProcess(_ completedPart: CGFloat, _ image: UIImage?) {
+        print("compleated part of convertion: ", completedPart)
+        if image != nil {
+            print("Image ready")
+        }
+        
+    }
     
     //getting new images
     @IBAction func plusButtonTapped(_ sender: UIButton) {
@@ -82,6 +96,12 @@ class ViewController: UIViewController, UIPopoverPresentationControllerDelegate,
     @IBOutlet weak var choosePicthureContainerView: UIView!
     @IBAction func tapWorksImageView(_ sender: UITapGestureRecognizer) {
         self.changeLookOfChoosePictureContainer()
+    }
+    
+    @IBAction func shareButtonTapped(_ sender: Any) {
+        for item in resStorage {
+            print(item.imageName as Any)
+        }
     }
     
     func changeLookOfChoosePictureContainer(){

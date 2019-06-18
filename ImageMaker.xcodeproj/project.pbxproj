@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		352F6D8C22B64BFA00ED5679 /* ImageConvertor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352F6D8B22B64BFA00ED5679 /* ImageConvertor.swift */; };
+		352F6D9022B97F6100ED5679 /* ResultImageObj.swift in Sources */ = {isa = PBXBuildFile; fileRef = 352F6D8F22B97F6100ED5679 /* ResultImageObj.swift */; };
 		355E26D622B2BCE700980373 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 355E26D522B2BCE700980373 /* AppDelegate.swift */; };
 		355E26D822B2BCE700980373 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 355E26D722B2BCE700980373 /* ViewController.swift */; };
 		355E26DB22B2BCE700980373 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 355E26D922B2BCE700980373 /* Main.storyboard */; };
@@ -17,6 +18,7 @@
 
 /* Begin PBXFileReference section */
 		352F6D8B22B64BFA00ED5679 /* ImageConvertor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageConvertor.swift; sourceTree = "<group>"; };
+		352F6D8F22B97F6100ED5679 /* ResultImageObj.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultImageObj.swift; sourceTree = "<group>"; };
 		355E26D222B2BCE700980373 /* ImageMaker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImageMaker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		355E26D522B2BCE700980373 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		355E26D722B2BCE700980373 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -60,6 +62,7 @@
 				355E26D722B2BCE700980373 /* ViewController.swift */,
 				355E26D922B2BCE700980373 /* Main.storyboard */,
 				352F6D8B22B64BFA00ED5679 /* ImageConvertor.swift */,
+				352F6D8F22B97F6100ED5679 /* ResultImageObj.swift */,
 				355E26DC22B2BCEF00980373 /* Assets.xcassets */,
 				355E26DE22B2BCEF00980373 /* LaunchScreen.storyboard */,
 				355E26E122B2BCEF00980373 /* Info.plist */,
@@ -138,6 +141,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				352F6D9022B97F6100ED5679 /* ResultImageObj.swift in Sources */,
 				355E26D822B2BCE700980373 /* ViewController.swift in Sources */,
 				355E26D622B2BCE700980373 /* AppDelegate.swift in Sources */,
 				352F6D8C22B64BFA00ED5679 /* ImageConvertor.swift in Sources */,

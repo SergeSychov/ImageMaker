@@ -205,6 +205,9 @@
                                                         <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                                         <size key="titleShadowOffset" width="0.0" height="1"/>
                                                         <state key="normal" title="Share"/>
+                                                        <connections>
+                                                            <action selector="shareButtonTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="k9s-RM-IxH"/>
+                                                        </connections>
                                                     </button>
                                                 </subviews>
                                             </stackView>
