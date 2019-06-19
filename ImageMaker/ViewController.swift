@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ViewController: UIViewController, UICollectionViewDataSource, UIPopoverPresentationControllerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate, ImageConvectorProcessDelegate {
+class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UIPopoverPresentationControllerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate, ImageConvectorProcessDelegate {
     
     @IBOutlet weak var workImageView: UIImageView!
     @IBOutlet weak var resultImageView: UIImageView!
@@ -26,11 +26,16 @@ class ViewController: UIViewController, UICollectionViewDataSource, UIPopoverPre
     //convert image actions
     @IBAction func convertImageAction(_ sender: UIButton) {
 
-        if sender.restorationIdentifier != nil  && workImageView.image != nil{
-            let resImgObj = ResultImageObj(workImageView.image!, sender.restorationIdentifier!)
+        if sender.restorationIdentifier != nil  && workImageView.image != nil {
+            let resImgObj = ResultImageObj(workImageView.image, sender.restorationIdentifier!)
             resStorage.append(resImgObj)
-            collectionOfResultImg.reloadData()
-            collectionOfResultImg.contentOffset = CGPoint(x: collectionOfResultImg.contentSize.width + 30, y: 0)
+            
+            collectionOfResultImg.performBatchUpdates({
+                collectionOfResultImg.insertItems(at: [IndexPath(item: resStorage.count-1, section: 0)])
+            }) { (true) in
+                self.moveCollectionViewtoRightPosition(self.collectionOfResultImg)
+            }
+
             if resImgObj.resultImg != nil {
                 resultImageView.image = resImgObj.resultImg
             }
@@ -122,11 +127,33 @@ class ViewController: UIViewController, UICollectionViewDataSource, UIPopoverPre
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "resultImgCell", for: indexPath)
 
-        //need guard this 
+        //need guard this
         let imgView = cell.contentView.viewWithTag(1) as! UIImageView
         imgView.image = resStorage[indexPath.row].resultImg
 
         return cell
+    }
+    //collection view flow layout delegate
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let height = collectionView.frame.size.height-2.0
+        return CGSize(width: height, height: height)
+    }
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 1.0
+    }
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        return 1.0
+    }
+    func moveCollectionViewtoRightPosition(_ collectionview: UICollectionView){
+        let needOffset = collectionview.contentSize.width - collectionview.frame.size.width + 100
+       
+        if needOffset < 0 {
+            UIView.animate(withDuration: 0.36) {
+                collectionview.contentInset = UIEdgeInsets(top: 0, left: -(needOffset), bottom: 0, right: 0)
+            }
+        } else {
+            self.collectionOfResultImg.setContentOffset(CGPoint(x:self.collectionOfResultImg.contentSize.width-self.collectionOfResultImg.bounds.size.width + 100, y: 0), animated: true)
+        }
     }
     
     func changeLookOfChoosePictureContainer(){
