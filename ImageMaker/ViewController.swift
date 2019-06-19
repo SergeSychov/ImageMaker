@@ -8,10 +8,12 @@
 
 import UIKit
 
-class ViewController: UIViewController, UIPopoverPresentationControllerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate, ImageConvectorProcessDelegate {
+class ViewController: UIViewController, UICollectionViewDataSource, UIPopoverPresentationControllerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate, ImageConvectorProcessDelegate {
     
     @IBOutlet weak var workImageView: UIImageView!
     @IBOutlet weak var resultImageView: UIImageView!
+    @IBOutlet weak var collectionOfResultImg: UICollectionView!
+    
     var resStorage = [ResultImageObj]()
     
     override func viewDidLoad() {
@@ -27,6 +29,8 @@ class ViewController: UIViewController, UIPopoverPresentationControllerDelegate,
         if sender.restorationIdentifier != nil  && workImageView.image != nil{
             let resImgObj = ResultImageObj(workImageView.image!, sender.restorationIdentifier!)
             resStorage.append(resImgObj)
+            collectionOfResultImg.reloadData()
+            collectionOfResultImg.contentOffset = CGPoint(x: collectionOfResultImg.contentSize.width + 30, y: 0)
             if resImgObj.resultImg != nil {
                 resultImageView.image = resImgObj.resultImg
             }
@@ -102,6 +106,27 @@ class ViewController: UIViewController, UIPopoverPresentationControllerDelegate,
         for item in resStorage {
             print(item.imageName as Any)
         }
+    }
+    
+    //collection view data sourse
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        return 1
+    }
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        if (resStorage.count>0){
+            return resStorage.count
+        } else {
+            return 0
+        }
+    }
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "resultImgCell", for: indexPath)
+
+        //need guard this 
+        let imgView = cell.contentView.viewWithTag(1) as! UIImageView
+        imgView.image = resStorage[indexPath.row].resultImg
+
+        return cell
     }
     
     func changeLookOfChoosePictureContainer(){
