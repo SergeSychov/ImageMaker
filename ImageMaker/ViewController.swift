@@ -8,13 +8,16 @@
 
 import UIKit
 
-class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UIPopoverPresentationControllerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate, ImageConvectorProcessDelegate {
+class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UIPopoverPresentationControllerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate, ResultImageObjDelegate {
+
     
-    @IBOutlet weak var workImageView: UIImageView!
+    @IBOutlet weak var inputImageView: UIImageView!
     @IBOutlet weak var resultImageView: UIImageView!
     @IBOutlet weak var collectionOfResultImg: UICollectionView!
     
-    var resStorage = [ResultImageObj]()
+    var workImage: UIImage? //image what will be uising for convertion
+    var resImgObjStorage = [ResultImageObj]()
+    var resuableImageStorageCache = NSCache<NSString, UIImage>()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,29 +29,29 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     //convert image actions
     @IBAction func convertImageAction(_ sender: UIButton) {
 
-        if sender.restorationIdentifier != nil  && workImageView.image != nil {
-            let resImgObj = ResultImageObj(workImageView.image, sender.restorationIdentifier!)
-            resStorage.append(resImgObj)
-            
-            collectionOfResultImg.performBatchUpdates({
-                collectionOfResultImg.insertItems(at: [IndexPath(item: resStorage.count-1, section: 0)])
-            }) { (true) in
-                self.moveCollectionViewtoRightPosition(self.collectionOfResultImg)
-            }
-
-            if resImgObj.resultImg != nil {
-                resultImageView.image = resImgObj.resultImg
+        if (sender.restorationIdentifier != nil) && (workImage != nil) {
+            if(resImgObjStorage.count > 0){
+                resImgObjStorage.last!.applyImgConvertion(workImage!, sender.restorationIdentifier)
             }
         }
     }
     
     //ImageConvectorProcessDelegate
-    func getDataFromImageConvectorProcess(_ completedPart: CGFloat, _ image: UIImage?) {
-        print("compleated part of convertion: ", completedPart)
-        if image != nil {
-            print("Image ready")
+    func changedImgWithName(resultImage: UIImage, resultImageObj: ResultImageObj) {
+        print("changed image with name: " + resultImageObj.imageName!)
+        //set new image in cache
+        resuableImageStorageCache.setObject(resultImage, forKey: NSString(string: resultImageObj.imageName!))
+        //find resultImageObj index in storage
+        let indexObj =  resImgObjStorage.firstIndex(of: resultImageObj)
+        if indexObj != nil {
+            if (indexObj == resImgObjStorage.count-1){ //if this resultObj is last in storage
+                workImage = resultImage
+                resultImageView.image = resultImage
+            }
+            collectionOfResultImg.reloadItems(at:[IndexPath(row: indexObj!, section: 0)])
+            self.moveCollectionViewtoRightPosition(self.collectionOfResultImg)
+            
         }
-        
     }
     
     //getting new images
@@ -94,13 +97,36 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     //picker controller Delegate
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
-            workImageView.image = image
+            didChoosedNewImg(image)
         } else {
             //error message
         }
         self.dismiss(animated: true, completion: nil);
     }
     
+    func didChoosedNewImg(_ image:UIImage){
+        //1. set new work Image
+        workImage = image
+        //2. set input ImageView
+        inputImageView.image = image
+        //3. clear result Image view
+        resultImageView.image = nil
+        //3. if current cell hasen't result Image add new cell
+        if (resImgObjStorage.count == 0) || (resImgObjStorage.last?.imageName != nil){
+            //create new emty resultObj add it to result storage aary
+            let newResultImageObj = ResultImageObj(nil, delegate: self)
+            resImgObjStorage.append(newResultImageObj)
+            //and add new cell for collection View
+            collectionOfResultImg.performBatchUpdates({
+                collectionOfResultImg.insertItems(at: [IndexPath(item: resImgObjStorage.count-1, section: 0)])
+            }) { (true) in
+                self.collectionOfResultImg.selectItem(at: IndexPath(item: self.resImgObjStorage.count-1, section: 0), animated: true, scrollPosition: .left)
+                self.moveCollectionViewtoRightPosition(self.collectionOfResultImg)
+                
+            }
+        }
+    }
+  
     //show and hide chooseImageContainer
     @IBOutlet weak var choosePicthureContainerView: UIView!
     @IBAction func tapWorksImageView(_ sender: UITapGestureRecognizer) {
@@ -108,8 +134,8 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     }
     
     @IBAction func shareButtonTapped(_ sender: Any) {
-        for item in resStorage {
-            print(item.imageName as Any)
+        for item in resImgObjStorage {
+            print(item as Any)
         }
     }
     
@@ -118,18 +144,30 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         return 1
     }
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if (resStorage.count>0){
-            return resStorage.count
+        if (resImgObjStorage.count>0){
+            return resImgObjStorage.count
         } else {
             return 0
         }
     }
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "resultImgCell", for: indexPath)
-
+        let resultObj = resImgObjStorage[indexPath.row]
         //need guard this
         let imgView = cell.contentView.viewWithTag(1) as! UIImageView
-        imgView.image = resStorage[indexPath.row].resultImg
+
+        if resultObj.imageName != nil {
+            if let image = resuableImageStorageCache.object(forKey: NSString(string: resultObj.imageName!)){
+                imgView.image = image
+            } else {
+                if let image = resImgObjStorage[indexPath.row].image {
+                    imgView.image = image
+                    resuableImageStorageCache.setObject(image, forKey: NSString(string: resultObj.imageName!))
+                }
+            }
+        } else {
+            imgView.image = nil
+        }
 
         return cell
     }

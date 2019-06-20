@@ -40,7 +40,7 @@
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                     <subviews>
                                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalCompressionResistancePriority="250" text="Choose new picthure:" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="vxe-t4-ZfS">
-                                                                            <rect key="frame" x="37" y="47.5" width="174.5" height="20.5"/>
+                                                                            <rect key="frame" x="37.5" y="47.5" width="174.5" height="20.5"/>
                                                                             <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                             <nil key="highlightedColor"/>
@@ -285,8 +285,8 @@
                     <connections>
                         <outlet property="choosePicthureContainerView" destination="4FQ-It-hgT" id="A8J-pu-mHw"/>
                         <outlet property="collectionOfResultImg" destination="PhT-vF-1Le" id="8Yj-tl-URq"/>
+                        <outlet property="inputImageView" destination="v5g-K4-QXv" id="oIh-i0-hqr"/>
                         <outlet property="resultImageView" destination="mFc-Ns-DBA" id="p2C-BU-Xoa"/>
-                        <outlet property="workImageView" destination="v5g-K4-QXv" id="GHB-Be-VXj"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
