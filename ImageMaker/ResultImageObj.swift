@@ -7,6 +7,62 @@
 //
 
 import UIKit
+let storageArrayName = "TaskManagerStorage.tskmng"
+let inputImageName = "TaskManageInputImage.jpeg"
+let workImageName = "TaskManageWorkImage.jpeg"
+
+func saveArray(resultObjsStorage: [ResultImageObj], name:String = storageArrayName) -> Bool{
+    guard let directory = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false) as NSURL else {
+        return false
+    }
+    //save only image names
+    var nameStringArray = [String]()
+    for item in resultObjsStorage {
+        nameStringArray.append(item.imageName!) //THINK about emty obj
+    }
+    
+    //Checks if file exists, remove it
+    if FileManager.default.fileExists(atPath: directory.appendingPathComponent(name)!.path) {
+        do {
+            //remove old img
+            try FileManager.default.removeItem(atPath: directory.appendingPathComponent(name)!.path)
+        } catch let removeError {
+            print("not remove obj arrays", removeError)
+            return false
+        }
+    }
+    
+    do {
+        try NSKeyedArchiver.archivedData(withRootObject: nameStringArray).write(to: directory.appendingPathComponent(name)!)
+        return true
+    } catch let saveError {
+        print("not save array", saveError)
+        return false
+    }
+}
+
+func getSavedResultStorage (named: String = storageArrayName, delegate: ResultImageObjDelegate) -> [ResultImageObj]? {
+    if let dir = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false) {
+        guard let namesArray = NSKeyedUnarchiver.unarchiveObject(withFile: URL(fileURLWithPath: dir.absoluteString).appendingPathComponent(named).path) as? [String] else { return [ResultImageObj]() }
+        var resultObjsStorage = [ResultImageObj]()
+        for item in namesArray {
+            resultObjsStorage.append(ResultImageObj(name: item, delegate: delegate))
+        }
+        return resultObjsStorage
+    }
+    return nil
+}
+
+func clearStorage(resultObjsStorage: [ResultImageObj])-> Bool{
+    var success = true
+    for item in resultObjsStorage {
+        if !removeFile(named: item.imageName!) {
+            print("not all disc storage have cleaned")
+            success = false
+        }
+    }
+    return success
+}
 
 func saveImage(image:UIImage, name:String) -> Bool {
     guard let data = image.jpegData(compressionQuality: 1) else {
@@ -101,16 +157,9 @@ class ResultImageObj: NSObject {
     //create new obj from saved file
     init(name:String, delegate:ResultImageObjDelegate?){
         self.imageName = name
+        self.delegate = delegate
     }
-    
-    deinit {
-        if imageName != nil {
-            if !removeFile(named: self.imageName!) {
-                print("can't delete file")
-            }
-        }
-    }
-    
+
     public func applyImgConvertion(_ workImage: UIImage,_ effect:String?){
         let outImg:UIImage
         if effect == "CutColors" {

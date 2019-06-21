@@ -21,8 +21,12 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.setProperties()
         choosePicthureContainerView.isHidden = true
-
+        
+        //add observeres to save main variables
+        NotificationCenter.default.addObserver(self, selector: #selector(appGoesOff), name: UIApplication.willResignActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(appGoesOff), name: UIApplication.willTerminateNotification, object: nil)
         // Do any additional setup after loading the view.
     }
     
@@ -49,8 +53,6 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                 resultImageView.image = resultImage
             }
             collectionOfResultImg.reloadItems(at:[IndexPath(row: indexObj!, section: 0)])
-            self.moveCollectionViewtoRightPosition(self.collectionOfResultImg)
-            
         }
     }
     
@@ -113,17 +115,19 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         resultImageView.image = nil
         //3. if current cell hasen't result Image add new cell
         if (resImgObjStorage.count == 0) || (resImgObjStorage.last?.imageName != nil){
-            //create new emty resultObj add it to result storage aary
-            let newResultImageObj = ResultImageObj(nil, delegate: self)
-            resImgObjStorage.append(newResultImageObj)
-            //and add new cell for collection View
-            collectionOfResultImg.performBatchUpdates({
-                collectionOfResultImg.insertItems(at: [IndexPath(item: resImgObjStorage.count-1, section: 0)])
-            }) { (true) in
-                self.collectionOfResultImg.selectItem(at: IndexPath(item: self.resImgObjStorage.count-1, section: 0), animated: true, scrollPosition: .left)
-                self.moveCollectionViewtoRightPosition(self.collectionOfResultImg)
-                
-            }
+            addNewEmtyObjAndNewCollectionCellandGoToRightPosition()
+        }
+    }
+    
+    func addNewEmtyObjAndNewCollectionCellandGoToRightPosition(){
+        //create new emty resultObj add it to result storage aary
+        let newResultImageObj = ResultImageObj(nil, delegate: self)
+        self.resImgObjStorage.append(newResultImageObj)
+        //and add new cell for collection View
+        self.collectionOfResultImg.performBatchUpdates({
+            self.collectionOfResultImg.insertItems(at: [IndexPath(item: resImgObjStorage.count-1, section: 0)])
+        }) { (true) in
+            self.collectionOfResultImg.selectItem(at: IndexPath(item: self.resImgObjStorage.count-1, section: 0), animated: true, scrollPosition: .left)
         }
     }
   
@@ -182,15 +186,14 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return 1.0
     }
-    func moveCollectionViewtoRightPosition(_ collectionview: UICollectionView){
-        let needOffset = collectionview.contentSize.width - collectionview.frame.size.width + 100
-       
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        let needOffset = collectionView.contentSize.width - collectionView.frame.size.width + 100
+        
         if needOffset < 0 {
-            UIView.animate(withDuration: 0.36) {
-                collectionview.contentInset = UIEdgeInsets(top: 0, left: -(needOffset), bottom: 0, right: 0)
-            }
+            return UIEdgeInsets(top: 0, left: -(needOffset), bottom: 0, right: 0)
         } else {
-            self.collectionOfResultImg.setContentOffset(CGPoint(x:self.collectionOfResultImg.contentSize.width-self.collectionOfResultImg.bounds.size.width + 100, y: 0), animated: true)
+            return UIEdgeInsets(top: 0, left:0, bottom: 0, right: 100)
         }
     }
     
@@ -207,6 +210,107 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             }) { (Bool) in
                 self.choosePicthureContainerView.isHidden = true
             }
+        }
+    }
+    
+    func setProperties (){
+        DispatchQueue.global(qos: .userInitiated).async {
+            let inputImage = getSavedImage(named: inputImageName)
+            let workImage = getSavedImage(named: workImageName)
+            let resultsStorage = getSavedResultStorage(delegate: self)
+            DispatchQueue.main.async {
+                print("all properties have getted")
+                if inputImage != nil {
+                    self.inputImageView.image = inputImage
+                    self.workImage = inputImage //in case if cant get saved workImage
+                }
+                
+                if workImage != nil {
+                    self.workImage = workImage
+                }
+                
+                if resultsStorage != nil {
+                    if(resultsStorage!.count > 0 ){
+                        self.resImgObjStorage = resultsStorage!
+                        self.collectionOfResultImg.reloadData()
+                        if self.resuableImageStorageCache.object(forKey:NSString(string: (resultsStorage?.last?.imageName!)!)) != nil {
+                            self.resultImageView.image = self.resuableImageStorageCache.object(forKey:NSString(string: (resultsStorage!.last!.imageName!)))
+                        } else {
+                            self.resultImageView.image = resultsStorage!.last!.image
+                        }
+                        self.collectionOfResultImg.selectItem(at: IndexPath(row: self.resImgObjStorage.count - 1, section: 0), animated: true, scrollPosition: .left)
+                    } else {
+                        self.addNewEmtyObjAndNewCollectionCellandGoToRightPosition()
+                    }
+                }
+            }
+        }
+        
+    }
+    
+    
+    @objc func appGoesOff() {
+        self.saveMainProperties()
+    }
+    override func didReceiveMemoryWarning() {
+        self.saveMainProperties()
+    }
+    
+    func saveMainProperties (){
+        //save input image with name and save name to user default
+        let inputImage = self.inputImageView.image
+        DispatchQueue.global(qos: .background).async {
+            if inputImage != nil{
+                if saveImage(image: inputImage!, name: inputImageName) {
+                    print("Inpute image saved")
+                }
+            }
+            
+            if self.workImage != nil{
+                if saveImage(image: self.workImage!, name: workImageName) {
+                    print("Work image saved")
+                }
+            }
+            if self.resImgObjStorage.count > 0 {
+                if saveArray(resultObjsStorage: self.resImgObjStorage){
+                    print("resultObjsStorage saved")
+                }
+            }
+            DispatchQueue.main.async {
+                print("all properties have saved")
+            }
+        }
+        
+        //save works image with name and save name to user default
+        //save storage
+    }
+    
+    @IBAction func clearArhciveTapped(_ sender: Any) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            if clearStorage(resultObjsStorage: self.resImgObjStorage){
+                
+                print("Archive cleaned succesifully")
+            }
+            DispatchQueue.main.async {
+
+                var indexPathes = [IndexPath]()
+                for item in self.resImgObjStorage.indices {
+                    indexPathes.append(IndexPath(item: item, section: 0))
+                }
+                self.resImgObjStorage = [ResultImageObj]()
+                self.resuableImageStorageCache.removeAllObjects()
+                self.collectionOfResultImg.performBatchUpdates({
+                    self.collectionOfResultImg.deleteItems(at: indexPathes)
+                }) { (true) in
+                    self.resultImageView.image = nil
+                    self.workImage = self.inputImageView.image
+                }
+            }
+        }
+        if clearStorage(resultObjsStorage: self.resImgObjStorage){
+            resuableImageStorageCache.removeAllObjects()
+            collectionOfResultImg.reloadData()
+            print("Archive cleaned succesifully")
         }
     }
 }
