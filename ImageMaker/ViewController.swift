@@ -29,10 +29,21 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         NotificationCenter.default.addObserver(self, selector: #selector(appGoesOff), name: UIApplication.willTerminateNotification, object: nil)
         // Do any additional setup after loading the view.
     }
-    
+
     //convert image actions
     @IBAction func convertImageAction(_ sender: UIButton) {
-
+        if resultImageView.image == nil { //if it's new image
+            //create new empty resultObj add it to result storage aray
+            self.resImgObjStorage.append(ResultImageObj(nil, delegate: self))
+            
+            //and add new cell for collection View
+            self.collectionOfResultImg.performBatchUpdates({
+                self.collectionOfResultImg.insertItems(at: [IndexPath(item: resImgObjStorage.count-1, section: 0)])
+            }) { (true) in
+                self.collectionOfResultImg.selectItem(at: IndexPath(item: self.resImgObjStorage.count-1, section: 0), animated: true, scrollPosition: .left)
+            }
+        }
+        
         if (sender.restorationIdentifier != nil) && (workImage != nil) {
             if(resImgObjStorage.count > 0){
                 resImgObjStorage.last!.applyImgConvertion(workImage!, sender.restorationIdentifier)
@@ -40,9 +51,8 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         }
     }
     
-    //ImageConvectorProcessDelegate
+    //ImageConvectorProcessDelegate - get result of convertion from imgObj
     func changedImgWithName(resultImage: UIImage, resultImageObj: ResultImageObj) {
-        print("changed image with name: " + resultImageObj.imageName!)
         //set new image in cache
         resuableImageStorageCache.setObject(resultImage, forKey: NSString(string: resultImageObj.imageName!))
         //find resultImageObj index in storage
@@ -55,8 +65,18 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             collectionOfResultImg.reloadItems(at:[IndexPath(row: indexObj!, section: 0)])
         }
     }
+
     
     //getting new images
+    func userDidChoosedNewImg(_ image:UIImage){
+        //1. set new work Image
+        workImage = image
+        //2. set input ImageView
+        inputImageView.image = image
+        //3. clear result Image view
+        resultImageView.image = nil
+    }
+    
     @IBAction func plusButtonTapped(_ sender: UIButton) {
 
         let alertcontroller = UIAlertController(title: nil, message:nil, preferredStyle: .actionSheet)
@@ -98,49 +118,37 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     
     //picker controller Delegate
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        if #available(iOS 11.0, *) {
-            
-            if let imageUrl = info[UIImagePickerController.InfoKey.imageURL] as? URL {
-                let image = loadImage(imageUrl:imageUrl , size: self.inputImageView.bounds.size, scale:2)
-                didChoosedNewImg(image)
-            }
-        } else {
-            if let imgUrl = info[UIImagePickerController.InfoKey.referenceURL] as? URL{
 
-                let localPath = NSTemporaryDirectory().appending(imgUrl.lastPathComponent)
-                let photoURL = URL.init(fileURLWithPath: localPath)
-                let image = loadImage(imageUrl:photoURL , size: self.inputImageView.bounds.size, scale:2)
-                didChoosedNewImg(image)
+        if picker.sourceType == UIImagePickerController.SourceType.camera {
+            if let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage{
+                
+                if let imageData = image.jpegData(compressionQuality: 1) as NSData? {
+                    let bytes = imageData.bytes.assumingMemoryBound(to: UInt8.self)
+                    let cfData = CFDataCreate(kCFAllocatorDefault, bytes, imageData.length)!
+                    let image = resizeImage(cfDataImg: cfData, size: self.inputImageView.bounds.size, scale: 2)
+                    userDidChoosedNewImg(image)
+                }
+            }
+        } else { //in taht case photo or photoLibrary
+            if #available(iOS 11.0, *) {
+                
+                if let imageUrl = info[UIImagePickerController.InfoKey.imageURL] as? URL {
+                    let image = loadImage(imageUrl:imageUrl , size: self.inputImageView.bounds.size, scale:2)
+                    userDidChoosedNewImg(image)
+                }
+            } else {
+                if let imgUrl = info[UIImagePickerController.InfoKey.mediaURL] as? URL{
+                    
+                    let localPath = NSTemporaryDirectory().appending(imgUrl.lastPathComponent)
+                    let photoURL = URL.init(fileURLWithPath: localPath)
+                    let image = loadImage(imageUrl:photoURL , size: self.inputImageView.bounds.size, scale:2)
+                    userDidChoosedNewImg(image)
+                }
             }
         }
         self.dismiss(animated: true, completion: nil);
     }
-    
-    func didChoosedNewImg(_ image:UIImage){
-        //1. set new work Image
-        workImage = image
-        //2. set input ImageView
-        inputImageView.image = image
-        //3. clear result Image view
-        resultImageView.image = nil
-        //3. if current cell hasen't result Image add new cell
-        if (resImgObjStorage.count == 0) || (resImgObjStorage.last?.imageName != nil){
-            addNewEmtyObjAndNewCollectionCellandGoToRightPosition()
-        }
-    }
-    
-    func addNewEmtyObjAndNewCollectionCellandGoToRightPosition(){
-        //create new emty resultObj add it to result storage aary
-        let newResultImageObj = ResultImageObj(nil, delegate: self)
-        self.resImgObjStorage.append(newResultImageObj)
-        //and add new cell for collection View
-        self.collectionOfResultImg.performBatchUpdates({
-            self.collectionOfResultImg.insertItems(at: [IndexPath(item: resImgObjStorage.count-1, section: 0)])
-        }) { (true) in
-            self.collectionOfResultImg.selectItem(at: IndexPath(item: self.resImgObjStorage.count-1, section: 0), animated: true, scrollPosition: .left)
-        }
-    }
-  
+
     //show and hide chooseImageContainer
     @IBOutlet weak var choosePicthureContainerView: UIView!
     @IBAction func tapWorksImageView(_ sender: UITapGestureRecognizer) {
@@ -159,6 +167,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     }
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if (resImgObjStorage.count>0){
+            print("Numbers of rows: ",resImgObjStorage.count)
             return resImgObjStorage.count
         } else {
             return 0
@@ -174,9 +183,10 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             if let image = resuableImageStorageCache.object(forKey: NSString(string: resultObj.imageName!)){
                 imgView.image = image
             } else {
-                if let image = resImgObjStorage[indexPath.row].image {
+                let image = resImgObjStorage[indexPath.row].image
+                if image != nil{
                     imgView.image = image
-                    resuableImageStorageCache.setObject(image, forKey: NSString(string: resultObj.imageName!))
+                    resuableImageStorageCache.setObject(image!, forKey: NSString(string: resultObj.imageName!))
                 }
             }
         } else {
@@ -232,13 +242,16 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                 print("all properties have getted")
                 if inputImage != nil {
                     self.inputImageView.image = inputImage
-                    self.workImage = inputImage //in case if cant get saved workImage
+                    if workImage != nil {
+                        self.workImage = workImage
+                    } else {
+                        self.workImage = inputImage //in case if cant get saved workImage
+                    }
+                } else {
+                    self.inputImageView.image = nil
+                    self.workImage = nil
                 }
-                
-                if workImage != nil {
-                    self.workImage = workImage
-                }
-                
+
                 if resultsStorage != nil {
                     if(resultsStorage!.count > 0 ){
                         self.resImgObjStorage = resultsStorage!
@@ -250,7 +263,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                         }
                         self.collectionOfResultImg.selectItem(at: IndexPath(row: self.resImgObjStorage.count - 1, section: 0), animated: true, scrollPosition: .left)
                     } else {
-                        self.addNewEmtyObjAndNewCollectionCellandGoToRightPosition()
+                        self.resImgObjStorage = [ResultImageObj]()
                     }
                 } else {
                    self.resImgObjStorage = [ResultImageObj]()
@@ -289,12 +302,12 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                 }
             }
             DispatchQueue.main.async {
+                
                 print("all properties have saved")
+                //clear image storage
+                self.resuableImageStorageCache.removeAllObjects()
             }
         }
-        
-        //save works image with name and save name to user default
-        //save storage
     }
     
     @IBAction func clearArhciveTapped(_ sender: Any) {
@@ -304,7 +317,6 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                 print("Archive cleaned succesifully")
             }
             DispatchQueue.main.async {
-
                 var indexPathes = [IndexPath]()
                 for item in self.resImgObjStorage.indices {
                     indexPathes.append(IndexPath(item: item, section: 0))
@@ -318,11 +330,6 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                     self.workImage = self.inputImageView.image
                 }
             }
-        }
-        if clearStorage(resultObjsStorage: self.resImgObjStorage){
-            resuableImageStorageCache.removeAllObjects()
-            collectionOfResultImg.reloadData()
-            print("Archive cleaned succesifully")
         }
     }
 }

@@ -132,10 +132,22 @@ class ResultImageObj: NSObject {
     weak var delegate: ResultImageObjDelegate?
     
     public var image:UIImage?{
-        if imageName != nil{
-        return getSavedImage(named:imageName!)
-        } else {
-            return nil
+        get {
+            if imageName != nil{
+                return getSavedImage(named:imageName!)
+            } else {
+                return nil
+            }
+        }
+        set (newImsge){
+            if newImsge != nil {
+                if self.imageName == nil {
+                    self.imageName = "ImageMaker_" + ProcessInfo().globallyUniqueString + ".jpg"
+                }
+                if saveImage(image:newImsge!, name:self.imageName!) {
+                    print("result img saved")
+                }
+            }
         }
     }
     

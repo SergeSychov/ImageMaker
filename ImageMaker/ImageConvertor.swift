@@ -8,6 +8,23 @@
 
 import UIKit
 
+func resizeImage(cfDataImg:CFData, size:CGSize, scale:CGFloat) -> UIImage {
+    
+    let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
+    let imageSource = CGImageSourceCreateWithData(cfDataImg, imageSourceOptions)!
+    //let imageSource = CGImageSourceCreateWithURL(imageUrl as CFURL, imageSourceOptions)!
+    
+    let maxdimentionInPixels = max(size.width, size.height)*scale
+    let downSampleOptions =
+        [kCGImageSourceCreateThumbnailFromImageAlways: true,
+         kCGImageSourceShouldCacheImmediately: true,
+         kCGImageSourceCreateThumbnailWithTransform: true,
+         kCGImageSourceThumbnailMaxPixelSize: maxdimentionInPixels] as CFDictionary
+    let downSampledImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, downSampleOptions)!
+    
+    return UIImage(cgImage: downSampledImage)
+}
+
 func loadImage(imageUrl:URL, size:CGSize, scale:CGFloat) -> UIImage {
 
         let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
