@@ -98,10 +98,20 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     
     //picker controller Delegate
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        if let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
-            didChoosedNewImg(image)
+        if #available(iOS 11.0, *) {
+            
+            if let imageUrl = info[UIImagePickerController.InfoKey.imageURL] as? URL {
+                let image = loadImage(imageUrl:imageUrl , size: self.inputImageView.bounds.size, scale:2)
+                didChoosedNewImg(image)
+            }
         } else {
-            //error message
+            if let imgUrl = info[UIImagePickerController.InfoKey.referenceURL] as? URL{
+
+                let localPath = NSTemporaryDirectory().appending(imgUrl.lastPathComponent)
+                let photoURL = URL.init(fileURLWithPath: localPath)
+                let image = loadImage(imageUrl:photoURL , size: self.inputImageView.bounds.size, scale:2)
+                didChoosedNewImg(image)
+            }
         }
         self.dismiss(animated: true, completion: nil);
     }
@@ -242,6 +252,8 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                     } else {
                         self.addNewEmtyObjAndNewCollectionCellandGoToRightPosition()
                     }
+                } else {
+                   self.resImgObjStorage = [ResultImageObj]()
                 }
             }
         }

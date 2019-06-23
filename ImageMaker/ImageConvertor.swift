@@ -8,6 +8,22 @@
 
 import UIKit
 
+func loadImage(imageUrl:URL, size:CGSize, scale:CGFloat) -> UIImage {
+
+        let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
+        let imageSource = CGImageSourceCreateWithURL(imageUrl as CFURL, imageSourceOptions)!
+    
+        let maxdimentionInPixels = max(size.width, size.height)*scale
+        let downSampleOptions =
+            [kCGImageSourceCreateThumbnailFromImageAlways: true,
+             kCGImageSourceShouldCacheImmediately: true,
+             kCGImageSourceCreateThumbnailWithTransform: true,
+                kCGImageSourceThumbnailMaxPixelSize: maxdimentionInPixels] as CFDictionary
+        let downSampledImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, downSampleOptions)!
+    
+        return UIImage(cgImage: downSampledImage)
+}
+
 protocol ImageConvectorProcessDelegate: class {
     //completedPart - percent of spent time according wholedelay interval
     func getDataFromImageConvectorProcess(_ completedPart:CGFloat, _ image: UIImage?)
