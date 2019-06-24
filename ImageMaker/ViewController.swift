@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UIPopoverPresentationControllerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate, ResultImageObjDelegate {
+class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UIPopoverPresentationControllerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate, ResultImageObjDelegate {
 
     
     @IBOutlet weak var inputImageView: UIImageView!
@@ -16,6 +16,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     @IBOutlet weak var collectionOfResultImg: UICollectionView!
     
     var workImage: UIImage? //image what will be uising for convertion
+    var workImageUrl: NSURL? //URL of wirking image
     var resImgObjStorage = [ResultImageObj]()
     var resuableImageStorageCache = NSCache<NSString, UIImage>()
     
@@ -60,6 +61,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         if indexObj != nil {
             if (indexObj == resImgObjStorage.count-1){ //if this resultObj is last in storage
                 workImage = resultImage
+                
                 resultImageView.image = resultImage
             }
             collectionOfResultImg.reloadItems(at:[IndexPath(row: indexObj!, section: 0)])
@@ -123,10 +125,18 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             if let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage{
                 
                 if let imageData = image.jpegData(compressionQuality: 1) as NSData? {
-                    let bytes = imageData.bytes.assumingMemoryBound(to: UInt8.self)
-                    let cfData = CFDataCreate(kCFAllocatorDefault, bytes, imageData.length)!
-                    let image = resizeImage(cfDataImg: cfData, size: self.inputImageView.bounds.size, scale: 2)
-                    userDidChoosedNewImg(image)
+                    let imageUrl = saveImageData(data: imageData, imageName: workImageName)
+                    if imageUrl != nil {
+                        let image = loadImage(imageUrl:imageUrl!, size: self.inputImageView.bounds.size, scale:2)
+                        userDidChoosedNewImg(image)
+                    }
+                
+                    //let bytes = imageData.bytes.assumingMemoryBound(to: UInt8.self)
+                    //let cfData = CFDataCreate(kCFAllocatorDefault, bytes, imageData.length)!
+                    //let image = resizeImage(cfDataImg: cfData, size: self.inputImageView.bounds.size, scale: 2)
+                    //let image = loadImage(imageUrl:imageUrl  , size: self.inputImageView.bounds.size, scale:2)
+                    //userDidChoosedNewImg(image)
+                    
                 }
             }
         } else { //in taht case photo or photoLibrary
@@ -194,6 +204,17 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         }
 
         return cell
+    }
+    //collection view delegate
+    func collectionView(_ collectionView: UICollectionView, shouldDeselectItemAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "resultImgCell", for: indexPath)
+        //let resultObj = resImgObjStorage[indexPath.row]
+        //print("resultObj hase name: ", resultObj.imageName)
+        cell.isHighlighted = true
     }
     //collection view flow layout delegate
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
