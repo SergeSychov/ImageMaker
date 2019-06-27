@@ -52,19 +52,19 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     @IBAction func convertImageAction(_ sender: UIButton) {
         if resultImageView.image == nil { //if it's new image
             //create new empty resultObj add it to result storage aray
-            self.resImgObjStorage.append(ResultImageObj(nil, delegate: self))
+            self.resImgObjStorage.insert(ResultImageObj(nil, delegate: self), at: 0) //add new obj in the begining
             
             //and add new cell for collection View
             self.collectionOfResultImg.performBatchUpdates({
-                self.collectionOfResultImg.insertItems(at: [IndexPath(item: resImgObjStorage.count-1, section: 0)])
+                self.collectionOfResultImg.insertItems(at: [IndexPath(item: 0, section: 0)])
             }) { (true) in
-                self.collectionOfResultImg.selectItem(at: IndexPath(item: self.resImgObjStorage.count-1, section: 0), animated: true, scrollPosition: .left)
+                self.collectionOfResultImg.selectItem(at: IndexPath(item: 0, section: 0), animated: true, scrollPosition: .right)
             }
         }
         
         if (sender.restorationIdentifier != nil) && (workImageUrl != nil) {
             if(resImgObjStorage.count > 0){
-                resImgObjStorage.last!.applyImgConvertion(workImageUrl!, sender.restorationIdentifier!)
+                resImgObjStorage.first!.applyImgConvertion(workImageUrl!, sender.restorationIdentifier!)
             }
         }
     }
@@ -73,7 +73,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     func changedImgResultObj(resultImageObj: ResultImageObj) {
         //find resultImageObj index in storage
         if let indexObj =  resImgObjStorage.firstIndex(of: resultImageObj) as Int?{
-            if (indexObj == resImgObjStorage.count-1){ //if this resultObj is last in storage
+            if (indexObj == 0){ //if this resultObj is last in storage
                 workImageUrl = resultImageObj.getURLOfImageFile()
                 UserDefaults.standard.set(workImageUrl, forKey: workImageURL)
                 resultImageView.image = resultImageObj.getUIImage(forSize: resultImageView.bounds.size)
@@ -173,7 +173,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                     print("Don't catch URL of source")
                 }
             } else {
-                if let imgUrl = info[UIImagePickerController.InfoKey.mediaURL] as? URL{
+                if let imgUrl = info[UIImagePickerController.InfoKey.referenceURL] as? URL{
                     
                     let localPath = NSTemporaryDirectory().appending(imgUrl.lastPathComponent)
                     let photoURL = URL.init(fileURLWithPath: localPath)
@@ -257,13 +257,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        let needOffset = collectionView.contentSize.width - collectionView.frame.size.width + 100
-        
-        if needOffset < 0 {
-            return UIEdgeInsets(top: 0, left: -(needOffset), bottom: 0, right: 0)
-        } else {
-            return UIEdgeInsets(top: 0, left:0, bottom: 0, right: 100)
-        }
+        return UIEdgeInsets(top: 0, left:100, bottom: 0, right: 0)
     }
     
     func changeLookOfChoosePictureContainer(){
@@ -323,7 +317,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                 DispatchQueue.main.async {
                     if self.resImgObjStorage.count > 0 {
                         self.collectionOfResultImg.reloadData()
-                        self.collectionOfResultImg.selectItem(at: IndexPath(item: self.resImgObjStorage.count-1, section: 0), animated: true, scrollPosition: .left)
+                        self.collectionOfResultImg.selectItem(at: IndexPath(item: 0, section: 0), animated: true, scrollPosition: .right)
                     }
                 }
             }
