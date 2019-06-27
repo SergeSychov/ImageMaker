@@ -10,7 +10,7 @@ import UIKit
 
 protocol ResultImageObjDelegate: class {
     //completedPart - percent of spent time according wholedelay interval
-    func changedImgWithName(resultImage: UIImage, resultImageObj:ResultImageObj)
+    func changedImgResultObj(resultImageObj:ResultImageObj)
 }
 
 class ResultImageObj: NSObject {
@@ -18,29 +18,14 @@ class ResultImageObj: NSObject {
     //private var resultImg: UIImage?
     var imageName:String?
     weak var delegate: ResultImageObjDelegate?
-    
-    public var image:UIImage?{
+    var processingDoneInPercent: CGFloat = 0.00 //default value. Value to show how image is converted from
+    var currentConvertionEffect: String? //if not compleated convertion need to save that information
+    public var convertProcessDone: CGFloat {
         get {
-            if imageName != nil{
-                return getSavedImage(named:imageName!)
-            } else {
-                return nil
-            }
-        }
-        set (newImsge){
-            if newImsge != nil {
-                if self.imageName == nil {
-                    self.imageName = "ImageMaker_" + ProcessInfo().globallyUniqueString + ".jpg"
-                }
-                if saveImage(image:newImsge!, name:self.imageName!) {
-                    print("result img saved")
-                }
-            }
+            return processingDoneInPercent
         }
     }
-    
-   // let percentOfCompletedConvertion: CGFloat //for future for convertion with delay
-    
+
     //create new imgObj from Image if Image = nil create an empty Obj
     init(_ inputImage:UIImage?, delegate:ResultImageObjDelegate?){
         self.delegate = delegate
@@ -55,32 +40,76 @@ class ResultImageObj: NSObject {
     }
     
     //create new obj from saved file
-    init(name:String, delegate:ResultImageObjDelegate?){
+    init(name:String, delegate:ResultImageObjDelegate?, notCompleatedEffect: String?){
         self.imageName = name
         self.delegate = delegate
+        self.processingDoneInPercent = 1.00
+        super.init()
+        
+        if notCompleatedEffect != nil {
+            //if load obj with not compleated effect - start convertion
+            if let objImgURL = urlForFileNamed(name) as URL?{
+                self.applyImgConvertion(objImgURL, notCompleatedEffect!) //
+            }
+        }
     }
 
-    public func applyImgConvertion(_ workImage: UIImage,_ effect:String?){
-        let outImg:UIImage
-        if effect == "CutColors" {
-            outImg = ImageConvertor.convertImageToBW(image: workImage)
-        } else if effect == "Mirror" {
-            outImg = ImageConvertor.mirrorHorizontally(image: workImage)
-        } else if effect == "Rotate" {
-            outImg = ImageConvertor.rotateImageLeft(image: workImage)
-        } else {
-            outImg = workImage
-        }
-        //if it was an empty obj set the unic name for it and save result image
-        
+    func applyImgConvertion(_ workImageURL: URL,_ effect:String){
+        //if it was an empty obj set the unic name for it
         if self.imageName == nil {
             self.imageName = "ImageMaker_" + ProcessInfo().globallyUniqueString + ".jpg"
         }
-        if saveImage(image:outImg, name:self.imageName!) {
-            print("result img saved")
-            if self.delegate != nil {
-                self.delegate!.changedImgWithName(resultImage:outImg, resultImageObj:self)
+        self.processingDoneInPercent = 0.00 //start convertation
+        self.currentConvertionEffect = effect
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            //1. save input DATA to obj URL for reasons if convertion will not be compleated till App go off
+            do {
+                let inputData = try NSData(contentsOf: workImageURL) as NSData
+                if saveImageData(data: inputData, imageName: self.imageName!) != nil {
+                    print("InputData saved")
+                }
+            } catch {
+                print("NSData error: ", error)
             }
+            
+            
+            let convertedUIImage = convertImageFromURL(imageUrl:workImageURL, effect:effect)
+            let isNewImageSaved = saveImage(image:convertedUIImage!, name:self.imageName!)
+            DispatchQueue.main.async {
+                if convertedUIImage != nil {
+
+                    
+                    //and save result image in unic URL //stop covertion
+                    self.processingDoneInPercent = 1.00
+                    self.currentConvertionEffect = nil
+                    if isNewImageSaved {
+                        print("result img saved")
+                        if self.delegate != nil {
+                            self.delegate!.changedImgResultObj(resultImageObj: self)
+                        }
+                    } else {
+                        print("Error saving img result")
+                    }
+                } else {
+                    print("Error convertion")
+                }
+            }
+        }
+    }
+    
+    func getURLOfImageFile() -> URL?{
+        return urlForFileNamed(self.imageName!)
+    }
+    
+    func getUIImage(forSize size:CGSize) -> UIImage?{
+        if let imageDataFileURL = urlForFileNamed(self.imageName!) as URL? {
+         
+            return loadImage(imageUrl: imageDataFileURL, size: size)
+            
+        } else {
+            
+            return nil
         }
     }
     
