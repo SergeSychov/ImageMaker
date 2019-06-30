@@ -15,30 +15,34 @@ let tempPhotoName = "tempPhotoName.jpeg"
 let workImageURL = "WorkImageURL"
 
 
-class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UIPopoverPresentationControllerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate, ResultImageObjDelegate {
+class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDataSourcePrefetching, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UIPopoverPresentationControllerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate, ResultImageObjDelegate {
 
-    
+
     @IBOutlet weak var inputImageView: UIImageView!
     @IBOutlet weak var resultImageView: UIImageView!
     @IBOutlet weak var collectionOfResultImg: UICollectionView!
     
     //var workImage: UIImage? //image what will be uising for convertion
     var inputImageUrl: URL? //need only for save
+    var isUserChoosedNewImage: Bool = false
     var workImageUrl: URL? //URL of working image
     var resImgObjStorage = [ResultImageObj]()
     var resuableImageStorageCache = NSCache<NSString, UIImage>()
     
     override func viewDidLoad() {
-        super.viewDidLoad()
+
         choosePicthureContainerView.isHidden = true
+        if #available(iOS 10.0, *){
+           self.collectionOfResultImg.prefetchDataSource = self
+        }
         getMainViewsPropertiesAndSetViews() //renew saved images
         
         //add observeres to save main variables
         NotificationCenter.default.addObserver(self, selector: #selector(appGoesOff), name: UIApplication.willResignActiveNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appGoesOff), name: UIApplication.willTerminateNotification, object: nil)
         // Do any additional setup after loading the view.
+        super.viewDidLoad()
     }
-    
 
     override func didReceiveMemoryWarning() {
         saveResultObjsToDisc()
@@ -48,9 +52,44 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         print("appGoesOff")
         self.saveResultObjsToDisc()
     }
+    
+    
+    //getting new images
+    func userDidChoosedNewImg(_ imageURL:URL){
+        
+        do {
+            //2. set input ImageView
+            inputImageView.image = try loadImage(imageUrl: imageURL, size: inputImageView.bounds.size)
+            //1. set temp URL to workImageURL and inputImageUrl
+            workImageUrl = imageURL
+            inputImageUrl  = imageURL
+            DispatchQueue.global(qos: .default).async { //save data from url to app directory
+                let successCopy = copyDataToFile(at: imageURL, fileName: inputImageName)
+                DispatchQueue.main.async {
+                    if successCopy { //if data copied successfuly
+                        do {  //try to get URL for saved file
+                            let savedImageUrl = try urlForFileNamed(inputImageName)
+                            self.inputImageUrl = savedImageUrl //set as input image URL
+                            self.workImageUrl = savedImageUrl //set as work image URL
+                        } catch {
+                            print("userDidChoosedNewImg can't get saved URL:", error)
+                        }
+                        
+                    }
+                }
+            }
+            
+            //3. clear result Image view - use this value as flag of setted new image
+            resultImageView.image = nil //as flag for creating new cell at convertion action
+            isUserChoosedNewImage = true
+        } catch {
+            print("userDidChoosedNewImg() some error: ", error)
+        }
+        
+    }
     //convert image actions
     @IBAction func convertImageAction(_ sender: UIButton) {
-        if resultImageView.image == nil { //if it's new image
+        if isUserChoosedNewImage { //if it's new image
             //create new empty resultObj add it to result storage aray
             self.resImgObjStorage.insert(ResultImageObj(nil, delegate: self), at: 0) //add new obj in the begining
             
@@ -60,6 +99,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             }) { (true) in
                 self.collectionOfResultImg.selectItem(at: IndexPath(item: 0, section: 0), animated: true, scrollPosition: .right)
             }
+            isUserChoosedNewImage = false //now new image seted as input for convertion
         }
         
         if (sender.restorationIdentifier != nil) && (workImageUrl != nil) {
@@ -68,8 +108,33 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             }
         }
     }
+    
+        //imageResultObj DELEGATE
+    func changedImgResultObj(resultImageObj: ResultImageObj, error: Error?) {
+        print("changedImgResultObj call")
+        if error != nil {
+            print("changedImgResultObj some error occures: ", error as Any)
+        } else {
+            if let indexObj =  resImgObjStorage.firstIndex(of: resultImageObj) as Int?{
+                if (indexObj == 0){ //if this resultObj is last in storage
+                    do {
+                        workImageUrl = try resultImageObj.getURLOfImageFile()
+                        UserDefaults.standard.set(workImageUrl, forKey: workImageURL)
+                        
+                        resultImageView.image = try resultImageObj.getUIImage(forSize: resultImageView.bounds.size)
+                    } catch {
+                        print("changedImgResultObj", error)
+                    }
+                }
+                resuableImageStorageCache.removeObject(forKey: resultImageObj.imageName! as NSString)//for renew image in set in collection delegate calling
+                collectionOfResultImg.reloadItems(at:[IndexPath(row: indexObj, section: 0)])
+            }
+        }
+    }
+    
 
-    //imageResultObj DELEGATE
+
+    /*
     func changedImgResultObj(resultImageObj: ResultImageObj) {
         //find resultImageObj index in storage
         if let indexObj =  resImgObjStorage.firstIndex(of: resultImageObj) as Int?{
@@ -82,32 +147,8 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             collectionOfResultImg.reloadItems(at:[IndexPath(row: indexObj, section: 0)])
         }
     }
-    
+    */
 
-    //getting new images
-    func userDidChoosedNewImg(_ imageURL:URL){
-        
-        //2. set input ImageView
-        inputImageView.image = loadImage(imageUrl: imageURL, size: inputImageView.bounds.size)
-        //1. set temp URL to workImageURL and inputImageUrl
-        workImageUrl = imageURL
-        inputImageUrl  = imageURL
-        DispatchQueue.global(qos: .default).async { //save data from url to app directory
-            let successCopy = copyDataToFile(at: imageURL, fileName: inputImageName)
-            DispatchQueue.main.async {
-                if successCopy { //if data copied successfuly
-                    let savedImageUrl = urlForFileNamed(inputImageName) //try to get URL for saved file
-                    if savedImageUrl != nil {
-                        self.inputImageUrl = savedImageUrl //set as input image URL
-                        self.workImageUrl = savedImageUrl //set as work image URL
-                    }
-                }
-            }
-        }
-
-        //3. clear result Image view - use this value as flag of setted new image
-        resultImageView.image = nil //as flag for creating new cell at convertion action
-    }
     
     @IBAction func plusButtonTapped(_ sender: UIButton) {
 
@@ -199,6 +240,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         }
     }
     
+
     //collection view data sourse
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 1
@@ -217,14 +259,23 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         //need guard this
         let imgView = cell.contentView.viewWithTag(1) as! UIImageView
 
-        if resultObj.imageName != nil {
-            if let image = resuableImageStorageCache.object(forKey: NSString(string: resultObj.imageName!)){
+        if (resultObj.imageName != nil) && (resultObj.convertProcessDone == 1.0) {
+            let image = resuableImageStorageCache.object(forKey: NSString(string: resultObj.imageName!))
+            if image != nil {
                 imgView.image = image
             } else {
-                let image = resImgObjStorage[indexPath.row].image
-                if image != nil{
-                    imgView.image = image
-                    resuableImageStorageCache.setObject(image!, forKey: NSString(string: resultObj.imageName!))
+                let size = imgView.bounds.size
+                DispatchQueue.global(qos: .userInitiated).async {
+                    do {
+                        let image = try resultObj.getUIImage(forSize: size)
+                        
+                        DispatchQueue.main.async {
+                            self.resuableImageStorageCache.setObject(image, forKey: NSString(string: resultObj.imageName!))
+                            self.collectionOfResultImg.reloadItems(at: [indexPath])
+                        }
+                    } catch {
+                        print(indexPath.row, "cellForItemAt can't load image for cell:", error)
+                    }
                 }
             }
         } else {
@@ -233,7 +284,36 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
 
         return cell
     }
+    
+    func configureCell(_ cell: UICollectionViewCell){
+        
+    }
+
+
+    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+        let side = collectionView.bounds.height > collectionView.bounds.width ? collectionView.bounds.width : collectionView.bounds.height
+
+        for indexPath in indexPaths {
+            //print(indexPath)
+            let resultObj = self.resImgObjStorage[indexPath.row]
+            if  self.resuableImageStorageCache.object(forKey: NSString(string: resultObj.imageName!)) == nil{
+                DispatchQueue.global(qos: .userInitiated).async {
+                    do {
+                        let image = try resultObj.getUIImage(forSize: CGSize(width: side, height: side))
+                        DispatchQueue.main.async {
+                            self.resuableImageStorageCache.setObject(image, forKey: NSString(string: resultObj.imageName!))
+                        }
+                    } catch {
+                        print(indexPath.row, "cellForItemAt can't load image for cell:", error)
+                    }
+                }
+            }
+        }
+    }
+    
+
     //collection view delegate
+    
     func collectionView(_ collectionView: UICollectionView, shouldDeselectItemAt indexPath: IndexPath) -> Bool {
         return true
     }
@@ -288,18 +368,21 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     
     func getMainViewsPropertiesAndSetViews (){
         //chek input image
-        self.inputImageUrl = getUrlForExistingFile(inputImageName)
-        if self.inputImageUrl != nil {
-            self.inputImageView.image = loadImage(imageUrl: inputImageUrl!, size: self.inputImageView.bounds.size)
-            self.workImageUrl = self.inputImageUrl //in case if not work ing url in next lines
-            self.resultImageView.image = nil
+        if let inputUrl = getUrlForExistingFile(inputImageName){
+            self.inputImageUrl = inputUrl
             
-            //chek work image
-            let savedWorkImageUrl = UserDefaults.standard.url(forKey: workImageURL)
-            //let savedWorkImageUrl = getUrlForExistingFile(workImageName)
-            if savedWorkImageUrl != nil {
-                self.workImageUrl = savedWorkImageUrl
-                self.resultImageView.image = loadImage(imageUrl: workImageUrl!, size: self.resultImageView.bounds.size)
+            do {
+                self.inputImageView.image = try loadImage(imageUrl: inputImageUrl!, size: self.inputImageView.bounds.size)
+                self.workImageUrl = self.inputImageUrl //in case if not work ing url in next lines
+                self.resultImageView.image = nil
+
+            } catch {
+                print("getMainViewsPropertiesAndSetViews get inputImageView error: ", error)
+                self.inputImageUrl = nil
+                self.inputImageView.image = nil
+                self.workImageUrl = nil
+                self.resultImageView.image = nil
+                welcomeUser()
             }
         } else { //at start
             self.inputImageUrl = nil
@@ -310,14 +393,30 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         }
 
         //get resultsObjArray
+       
         let savedArrayUrl = getUrlForExistingFile(storageArrayName)
         if savedArrayUrl != nil {
             DispatchQueue.global(qos: .userInitiated).async {
-                self.resImgObjStorage = getSavedResultStorageWithName(name: storageArrayName, delegate: self)
+                let savedStorage = getSavedResultStorageWithName(name: storageArrayName, delegate: self)
+                
                 DispatchQueue.main.async {
+                    self.resImgObjStorage = savedStorage
+                    //self.resImgObjStorage = [ResultImageObj]()
                     if self.resImgObjStorage.count > 0 {
                         self.collectionOfResultImg.reloadData()
                         self.collectionOfResultImg.selectItem(at: IndexPath(item: 0, section: 0), animated: true, scrollPosition: .right)
+                        
+                        //set work image as first in results array
+                        if let firstResultImageURL = getUrlForExistingFile(self.resImgObjStorage.first!.imageName!) {
+                            do {
+                                self.resultImageView.image = try loadImage(imageUrl: firstResultImageURL, size: self.resultImageView.bounds.size)
+                                self.workImageUrl = firstResultImageURL
+                            } catch {
+                                print("getMainViewsPropertiesAndSetViews get workImageUrl error: ", error)
+                            }
+                        }
+                    } else {
+                        self.isUserChoosedNewImage = true //set flag that imput image is new for work
                     }
                 }
             }
@@ -350,6 +449,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                 }) { (true) in
                     self.resultImageView.image = nil
                     self.workImageUrl = self.inputImageUrl
+                    self.isUserChoosedNewImage = true //set flag that imput image is new for work
                 }
             }
         }
