@@ -24,8 +24,15 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     
     //var workImage: UIImage? //image what will be uising for convertion
     var inputImageUrl: URL? //need only for save
-    var isUserChoosedNewImage: Bool = false
-    var workImageUrl: URL? //URL of working image
+    var isUserChoosedNewImage: Bool{
+        get {
+            return UserDefaults.standard.bool(forKey: "isUserChoosedNewImage")
+        }
+        set (newValue){
+            UserDefaults.standard.set(newValue, forKey: "isUserChoosedNewImage")
+        }
+    }
+
     var resImgObjStorage = [ResultImageObj]()
     var resuableImageStorageCache = NSCache<NSString, UIImage>()
     
@@ -35,6 +42,8 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         if #available(iOS 10.0, *){
            self.collectionOfResultImg.prefetchDataSource = self
         }
+        
+        
         getMainViewsPropertiesAndSetViews() //renew saved images
         
         //add observeres to save main variables
@@ -60,8 +69,6 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         do {
             //2. set input ImageView
             inputImageView.image = try loadImage(imageUrl: imageURL, size: inputImageView.bounds.size)
-            //1. set temp URL to workImageURL and inputImageUrl
-            workImageUrl = imageURL
             inputImageUrl  = imageURL
             DispatchQueue.global(qos: .default).async { //save data from url to app directory
                 let successCopy = copyDataToFile(at: imageURL, fileName: inputImageName)
@@ -70,7 +77,6 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                         do {  //try to get URL for saved file
                             let savedImageUrl = try urlForFileNamed(inputImageName)
                             self.inputImageUrl = savedImageUrl //set as input image URL
-                            self.workImageUrl = savedImageUrl //set as work image URL
                         } catch {
                             print("userDidChoosedNewImg can't get saved URL:", error)
                         }
@@ -91,21 +97,26 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     @IBAction func convertImageAction(_ sender: UIButton) {
         if isUserChoosedNewImage { //if it's new image
             //create new empty resultObj add it to result storage aray
-            self.resImgObjStorage.insert(ResultImageObj(nil, delegate: self), at: 0) //add new obj in the begining
-            
-            //and add new cell for collection View
-            self.collectionOfResultImg.performBatchUpdates({
-                self.collectionOfResultImg.insertItems(at: [IndexPath(item: 0, section: 0)])
-            }) { (true) in
-                self.collectionOfResultImg.selectItem(at: IndexPath(item: 0, section: 0), animated: true, scrollPosition: .right)
+            let newResObj = ResultImageObj(inputImageUrl!, delegate: self)
+                if newResObj != nil {
+                self.resImgObjStorage.insert(newResObj!, at: 0) //add new obj in the begining
+                
+                //and add new cell for collection View
+                self.collectionOfResultImg.performBatchUpdates({
+                    self.collectionOfResultImg.insertItems(at: [IndexPath(item: 0, section: 0)])
+                }) { (true) in
+                    self.collectionOfResultImg.selectItem(at: IndexPath(item: 0, section: 0), animated: true, scrollPosition: .right)
+                }
+                isUserChoosedNewImage = false //now new image seted as input for convertion
             }
-            isUserChoosedNewImage = false //now new image seted as input for convertion
         }
         
-        if (sender.restorationIdentifier != nil) && (workImageUrl != nil) {
-            if(resImgObjStorage.count > 0){
-                resImgObjStorage.first!.applyImgConvertion(workImageUrl!, sender.restorationIdentifier!)
+        if sender.restorationIdentifier != nil {
+            if(resImgObjStorage.count > 0 ) {
+                resImgObjStorage.first!.applyImgConvertionWith(sender.restorationIdentifier!)
             }
+        } else {
+            print("Button without restorationIdentifier!")
         }
     }
     
@@ -118,38 +129,17 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             if let indexObj =  resImgObjStorage.firstIndex(of: resultImageObj) as Int?{
                 if (indexObj == 0){ //if this resultObj is last in storage
                     do {
-                        workImageUrl = try resultImageObj.getURLOfImageFile()
-                        UserDefaults.standard.set(workImageUrl, forKey: workImageURL)
-                        
                         resultImageView.image = try resultImageObj.getUIImage(forSize: resultImageView.bounds.size)
                     } catch {
                         print("changedImgResultObj", error)
                     }
                 }
-                resuableImageStorageCache.removeObject(forKey: resultImageObj.imageName! as NSString)//for renew image in set in collection delegate calling
+                resuableImageStorageCache.removeObject(forKey: resultImageObj.imageName as NSString)//for renew image in Cache in collection delegate calling
                 collectionOfResultImg.reloadItems(at:[IndexPath(row: indexObj, section: 0)])
             }
         }
     }
-    
 
-
-    /*
-    func changedImgResultObj(resultImageObj: ResultImageObj) {
-        //find resultImageObj index in storage
-        if let indexObj =  resImgObjStorage.firstIndex(of: resultImageObj) as Int?{
-            if (indexObj == 0){ //if this resultObj is last in storage
-                workImageUrl = resultImageObj.getURLOfImageFile()
-                UserDefaults.standard.set(workImageUrl, forKey: workImageURL)
-                resultImageView.image = resultImageObj.getUIImage(forSize: resultImageView.bounds.size)
-            }
-            resuableImageStorageCache.removeObject(forKey: resultImageObj.imageName! as NSString)//for renew image in set in collection delegate calling
-            collectionOfResultImg.reloadItems(at:[IndexPath(row: indexObj, section: 0)])
-        }
-    }
-    */
-
-    
     @IBAction func plusButtonTapped(_ sender: UIButton) {
 
         let alertcontroller = UIAlertController(title: nil, message:nil, preferredStyle: .actionSheet)
@@ -259,8 +249,8 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         //need guard this
         let imgView = cell.contentView.viewWithTag(1) as! UIImageView
 
-        if (resultObj.imageName != nil) && (resultObj.convertProcessDone == 1.0) {
-            let image = resuableImageStorageCache.object(forKey: NSString(string: resultObj.imageName!))
+        if resultObj.convertProcessDone == 1.0 {
+            let image = resuableImageStorageCache.object(forKey: NSString(string: resultObj.imageName))
             if image != nil {
                 imgView.image = image
             } else {
@@ -270,7 +260,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                         let image = try resultObj.getUIImage(forSize: size)
                         
                         DispatchQueue.main.async {
-                            self.resuableImageStorageCache.setObject(image, forKey: NSString(string: resultObj.imageName!))
+                            self.resuableImageStorageCache.setObject(image, forKey: resultObj.imageName as NSString)
                             self.collectionOfResultImg.reloadItems(at: [indexPath])
                         }
                     } catch {
@@ -296,12 +286,12 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         for indexPath in indexPaths {
             //print(indexPath)
             let resultObj = self.resImgObjStorage[indexPath.row]
-            if  self.resuableImageStorageCache.object(forKey: NSString(string: resultObj.imageName!)) == nil{
+            if  self.resuableImageStorageCache.object(forKey: NSString(string: resultObj.imageName)) == nil{
                 DispatchQueue.global(qos: .userInitiated).async {
                     do {
                         let image = try resultObj.getUIImage(forSize: CGSize(width: side, height: side))
                         DispatchQueue.main.async {
-                            self.resuableImageStorageCache.setObject(image, forKey: NSString(string: resultObj.imageName!))
+                            self.resuableImageStorageCache.setObject(image, forKey:resultObj.imageName as NSString)
                         }
                     } catch {
                         print(indexPath.row, "cellForItemAt can't load image for cell:", error)
@@ -373,22 +363,22 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             
             do {
                 self.inputImageView.image = try loadImage(imageUrl: inputImageUrl!, size: self.inputImageView.bounds.size)
-                self.workImageUrl = self.inputImageUrl //in case if not work ing url in next lines
                 self.resultImageView.image = nil
+                self.isUserChoosedNewImage = true
 
             } catch {
                 print("getMainViewsPropertiesAndSetViews get inputImageView error: ", error)
                 self.inputImageUrl = nil
                 self.inputImageView.image = nil
-                self.workImageUrl = nil
                 self.resultImageView.image = nil
+                self.isUserChoosedNewImage = false
                 welcomeUser()
             }
         } else { //at start
             self.inputImageUrl = nil
             self.inputImageView.image = nil
-            self.workImageUrl = nil
             self.resultImageView.image = nil
+            self.isUserChoosedNewImage = false
             welcomeUser()
         }
 
@@ -401,16 +391,16 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                 
                 DispatchQueue.main.async {
                     self.resImgObjStorage = savedStorage
-                    //self.resImgObjStorage = [ResultImageObj]()
                     if self.resImgObjStorage.count > 0 {
                         self.collectionOfResultImg.reloadData()
                         self.collectionOfResultImg.selectItem(at: IndexPath(item: 0, section: 0), animated: true, scrollPosition: .right)
                         
                         //set work image as first in results array
-                        if let firstResultImageURL = getUrlForExistingFile(self.resImgObjStorage.first!.imageName!) {
+                        if let firstResultImageURL = getUrlForExistingFile(self.resImgObjStorage.first!.imageName) {
                             do {
-                                self.resultImageView.image = try loadImage(imageUrl: firstResultImageURL, size: self.resultImageView.bounds.size)
-                                self.workImageUrl = firstResultImageURL
+                                if !self.isUserChoosedNewImage { //if user choosed new image the result image must be empty
+                                    self.resultImageView.image = try loadImage(imageUrl: firstResultImageURL, size: self.resultImageView.bounds.size)
+                                }
                             } catch {
                                 print("getMainViewsPropertiesAndSetViews get workImageUrl error: ", error)
                             }
@@ -433,7 +423,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         DispatchQueue.global(qos: .userInitiated).async {
 
             for item in self.resImgObjStorage {
-                if !removeFile(named: item.imageName!) {
+                if !removeFile(named: item.imageName) {
                     print("not all disc storage have cleaned")
                 }
             }
@@ -448,7 +438,6 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                     self.collectionOfResultImg.deleteItems(at: indexPathes)
                 }) { (true) in
                     self.resultImageView.image = nil
-                    self.workImageUrl = self.inputImageUrl
                     self.isUserChoosedNewImage = true //set flag that imput image is new for work
                 }
             }

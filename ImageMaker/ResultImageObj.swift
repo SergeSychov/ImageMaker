@@ -16,7 +16,7 @@ protocol ResultImageObjDelegate: class {
 class ResultImageObj: NSObject {
     
     //private var resultImg: UIImage?
-    var imageName:String?
+    var imageName:String
     weak var delegate: ResultImageObjDelegate?
     var processingDoneInPercent: CGFloat = 0.00 //default value. Value to show how image is converted from
     var currentConvertionEffect: String? //if not compleated convertion need to save that information
@@ -27,16 +27,20 @@ class ResultImageObj: NSObject {
     }
 
     //create new imgObj from Image if Image = nil create an empty Obj
-    init(_ inputImage:UIImage?, delegate:ResultImageObjDelegate?){
+    init?(_ inputImageURL:URL, delegate:ResultImageObjDelegate?){
         self.delegate = delegate
-        self.imageName = nil
-        if inputImage != nil {
-            self.imageName = "ImageMaker_" + ProcessInfo().globallyUniqueString + ".jpg"
-            if saveImage(image:inputImage!, name:self.imageName!) {
-                print("result img saved")
+
+        do {
+            self.imageName = "ImageMaker_" + ProcessInfo().globallyUniqueString + ".jpg" //create unic name for saved image
+            let inputData = try NSData(contentsOf: inputImageURL) as NSData
+            if saveImageData(data: inputData, imageName: self.imageName) != nil {
+                print("InputData saved")
             }
-        } //else make an obj with string name nil
-        super.init()
+            super.init()
+        } catch {
+            print("NSData error: ", error)
+            return nil
+        }
     }
     
     //create new obj from saved file
@@ -49,40 +53,25 @@ class ResultImageObj: NSObject {
         if notCompleatedEffect != nil {
             //if load obj with not compleated effect - start convertion
             do {
-                let objImgURL = try urlForFileNamed(name)
-                self.applyImgConvertion(objImgURL, notCompleatedEffect!)
+                self.applyImgConvertionWith(notCompleatedEffect!)
             } catch {
                 print("ResObj init from file can't create URL for name", error)
             }
         }
     }
-
-    func applyImgConvertion(_ workImageURL: URL,_ effect:String){
-        //if it was an empty obj set the unic name for it
-        if self.imageName == nil {
-            self.imageName = "ImageMaker_" + ProcessInfo().globallyUniqueString + ".jpg"
-        }
+    
+    func applyImgConvertionWith(_ effect: String){
         self.processingDoneInPercent = 0.00 //start convertation
         self.currentConvertionEffect = effect
         
         DispatchQueue.global(qos: .userInitiated).async {
             var aplyConvertionError:Error?
-            //1. save input DATA to obj URL for reasons if convertion will not be compleated till App go off
-            do {
-                let inputData = try NSData(contentsOf: workImageURL) as NSData
-                if saveImageData(data: inputData, imageName: self.imageName!) != nil {
-                    print("InputData saved")
-                }
-            } catch {
-                print("NSData error: ", error)
-                aplyConvertionError = error
-            }
             
             var convertedUIImage: UIImage?
             var isNewImageSaved = false
             do {
-                convertedUIImage = try convertImageFromURL(imageUrl:workImageURL, effect:effect)
-                isNewImageSaved = saveImage(image:convertedUIImage!, name:self.imageName!)
+                convertedUIImage = try convertImageFromURL(imageUrl:urlForFileNamed(self.imageName), effect:effect)
+                isNewImageSaved = saveImage(image:convertedUIImage!, name:self.imageName)
             } catch {
                 print("Convertion error: ", error)
                 aplyConvertionError = error
@@ -100,25 +89,23 @@ class ResultImageObj: NSObject {
             }
         }
     }
-    
+
     func getURLOfImageFile() throws -> URL{
         do {
-            return try urlForFileNamed(self.imageName!)
+            return try urlForFileNamed(self.imageName)
         } catch {
             print("getURLOfImageFile get URL:", error)
             throw error
         }
-        
     }
     
     func getUIImage(forSize size:CGSize) throws -> UIImage{
         do {
-            let imageDataFileURL = try urlForFileNamed(self.imageName!)
+            let imageDataFileURL = try urlForFileNamed(self.imageName)
             return try loadImage(imageUrl: imageDataFileURL, size: size)
         } catch {
             print("Error getUIImage get URL:", error)
             throw error
         }
     }
-    
 }
