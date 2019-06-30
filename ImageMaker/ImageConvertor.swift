@@ -56,21 +56,43 @@ func convertImageFromURL(imageUrl: URL, effect: String) throws -> UIImage? {
     guard let ciImageFromURL = CIImage(contentsOf: imageUrl) else {
         throw convertImageError.invalidImageData
     }
-    guard effects.keys.contains(effect) || filters.keys.contains(effect) else {
+   /* guard effects.keys.contains(effect) || filters.keys.contains(effect) else {
         throw convertImageError.invalidEffectName
     }
     let converTask = filters.keys.contains(effect) ? "Filter" : effect
     
-    switch effects[converTask] {
-    case effects["Filter"]:
-        return convertImageWithFilter(ciImage:ciImageFromURL, filterName: filters[effect]!)
-    case effects["Mirror"]:
-        return mirrorHorizontally(ciImage: ciImageFromURL)
-    case effects["Rotate"]:
-        return rotateImageLeft(ciImage: ciImageFromURL)
-    default:
-        return UIImage(ciImage: ciImageFromURL)
+    var outCiImage: CIImage?*/
+    do {
+        let outCiImage = try convertCIImage(ciImage: ciImageFromURL, with: effect)
+        
+        /*
+        switch effects[converTask] {
+        case effects["Filter"]:
+            outCiImage = convertImageWithFilter(ciImage:ciImageFromURL, filterName: filters[effect]!)
+        case effects["Mirror"]:
+            outCiImage = mirrorHorizontally(ciImage: ciImageFromURL)
+        case effects["Rotate"]:
+            outCiImage = rotateImageLeft(ciImage: ciImageFromURL)
+        default:
+            outCiImage = ciImageFromURL
+        }*/
+        
+        if outCiImage != nil {
+            let cgImage = CIContext().createCGImage(outCiImage!, from: (outCiImage!.extent))
+            
+            if cgImage == nil {
+                return UIImage(ciImage: outCiImage!) //return input image as result, can not convert
+            } else {
+                return UIImage(cgImage: cgImage!)
+            }
+        } else {
+            return nil
+        }
+    } catch {
+        print(error)
+        return nil
     }
+    
     
     /*do {
         let ciImageFromURL = try getCIImageFromURL(imageUrl: imageUrl)
@@ -90,7 +112,7 @@ func getCIImageFromURL(imageUrl: URL) throws -> CIImage {
     return ciImageFromURL
 }
 
-/*
+
 func convertCIImage(ciImage: CIImage, with effect: String) throws -> CIImage? {
     guard effects.keys.contains(effect) || filters.keys.contains(effect) else {
         throw convertImageError.invalidEffectName
@@ -107,16 +129,16 @@ func convertCIImage(ciImage: CIImage, with effect: String) throws -> CIImage? {
     default:
         return ciImage
     }
-}*/
+}
 
-func convertImageWithFilter(ciImage:CIImage, filterName: String) -> UIImage? { //    class
+func convertImageWithFilter(ciImage:CIImage, filterName: String) -> CIImage? { //    class
     
     let filter = CIFilter(name: filterName)
     filter?.setValue(ciImage, forKey: "inputImage")
     
-   // return filter?.outputImage
+    return filter?.outputImage
     
-    
+    /*
     let ciOutput = filter?.outputImage
     
     let cgImage = CIContext().createCGImage(ciOutput!, from: (ciOutput?.extent)!)
@@ -125,24 +147,26 @@ func convertImageWithFilter(ciImage:CIImage, filterName: String) -> UIImage? { /
         return UIImage(ciImage: ciImage) //return input image as result, can not convert
     } else {
         return UIImage(cgImage: cgImage!)
-    }
+    }*/
 }
 
-func mirrorHorizontally(ciImage: CIImage)->UIImage?{
-    //return ciImage.transformed(by: CGAffineTransform.init(scaleX: -1, y: 1))
+func mirrorHorizontally(ciImage: CIImage)->CIImage?{
+    return ciImage.transformed(by: CGAffineTransform.init(scaleX: -1, y: 1))
 
+    /*
     let ciOutput = ciImage.transformed(by: CGAffineTransform.init(scaleX: -1, y: 1))
     let cgImage = CIContext().createCGImage(ciOutput, from: (ciOutput.extent))
     if cgImage == nil {
         return UIImage(ciImage: ciImage) //return input image as result, can not convert
     } else {
         return UIImage(cgImage: cgImage!)
-    }
+    }*/
 }
 
-func rotateImageLeft(ciImage: CIImage)->UIImage?{
-   // return ciImage.transformed(by: CGAffineTransform.init(rotationAngle: -.pi/2))
+func rotateImageLeft(ciImage: CIImage)->CIImage?{
+    return ciImage.transformed(by: CGAffineTransform.init(rotationAngle: -.pi/2))
    
+    /*
     let ciOutput = ciImage.transformed(by: CGAffineTransform.init(rotationAngle: -.pi/2))
     let cgImage = CIContext().createCGImage(ciOutput, from: (ciOutput.extent))
     
@@ -150,7 +174,7 @@ func rotateImageLeft(ciImage: CIImage)->UIImage?{
         return UIImage(ciImage: ciImage) //return input image as result, can not convert
     } else {
         return UIImage(cgImage: cgImage!)
-    }
+    }*/
 
 }
 
