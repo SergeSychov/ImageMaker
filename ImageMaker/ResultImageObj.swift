@@ -10,7 +10,7 @@ import UIKit
 
 protocol ResultImageObjDelegate: class {
     //completedPart - percent of spent time according wholedelay interval
-    func changedImgResultObj(resultImageObj:ResultImageObj)
+    func changedImgResultObj(resultImageObj:ResultImageObj, error:Error?)
 }
 
 class ResultImageObj: NSObject {
@@ -25,6 +25,9 @@ class ResultImageObj: NSObject {
             return processingDoneInPercent
         }
     }
+    var workProccess:DispatchWorkItem?
+    //Create dispatch group
+    let dispatchGroup = DispatchGroup()
 
     //create new imgObj from Image if Image = nil create an empty Obj
     init(_ inputImage:UIImage?, delegate:ResultImageObjDelegate?){
@@ -48,8 +51,11 @@ class ResultImageObj: NSObject {
         
         if notCompleatedEffect != nil {
             //if load obj with not compleated effect - start convertion
-            if let objImgURL = urlForFileNamed(name) as URL?{
-                self.applyImgConvertion(objImgURL, notCompleatedEffect!) //
+            do {
+                let objImgURL = try urlForFileNamed(name)
+                self.applyImgConvertion(objImgURL, notCompleatedEffect!)
+            } catch {
+                print("ResObj init from file can't create URL for name", error)
             }
         }
     }
@@ -61,8 +67,14 @@ class ResultImageObj: NSObject {
         }
         self.processingDoneInPercent = 0.00 //start convertation
         self.currentConvertionEffect = effect
-
-        DispatchQueue.global(qos: .userInitiated).async {
+        
+        if self.workProccess != nil {
+            self.workProccess!.cancel()
+            
+        } //stop previous launched process
+        
+        let workItem = DispatchWorkItem {
+            var aplyConvertionError:Error?
             //1. save input DATA to obj URL for reasons if convertion will not be compleated till App go off
             do {
                 let inputData = try NSData(contentsOf: workImageURL) as NSData
@@ -71,45 +83,55 @@ class ResultImageObj: NSObject {
                 }
             } catch {
                 print("NSData error: ", error)
+                aplyConvertionError = error
             }
             
+            var convertedUIImage: UIImage?
+            var isNewImageSaved = false
+            do {
+                convertedUIImage = try convertImageFromURL(imageUrl:workImageURL, effect:effect)
+                isNewImageSaved = saveImage(image:convertedUIImage!, name:self.imageName!)
+            } catch {
+                print("Convertion error: ", error)
+                aplyConvertionError = error
+            }
             
-            let convertedUIImage = convertImageFromURL(imageUrl:workImageURL, effect:effect)
-            let isNewImageSaved = saveImage(image:convertedUIImage!, name:self.imageName!)
             DispatchQueue.main.async {
-                if convertedUIImage != nil {
-
-                    
-                    //and save result image in unic URL //stop covertion
+                if effect == self.currentConvertionEffect {//if it is atual request.
                     self.processingDoneInPercent = 1.00
                     self.currentConvertionEffect = nil
-                    if isNewImageSaved {
-                        print("result img saved")
-                        if self.delegate != nil {
-                            self.delegate!.changedImgResultObj(resultImageObj: self)
-                        }
-                    } else {
-                        print("Error saving img result")
+                    self.workProccess = nil
+                    if self.delegate != nil {
+                        self.delegate!.changedImgResultObj(resultImageObj: self, error: aplyConvertionError)
+                        //self.delegate!.changedImgResultObj(resultImageObj:self )
                     }
-                } else {
-                    print("Error convertion")
                 }
+                
             }
         }
+        self.workProccess = workItem //set as current work process
+
+        // execute the workItem with dispatchGroup
+        DispatchQueue.global().async(group: dispatchGroup, execute: workItem)
     }
     
-    func getURLOfImageFile() -> URL?{
-        return urlForFileNamed(self.imageName!)
+    func getURLOfImageFile() throws -> URL{
+        do {
+            return try urlForFileNamed(self.imageName!)
+        } catch {
+            print("getURLOfImageFile get URL:", error)
+            throw error
+        }
+        
     }
     
-    func getUIImage(forSize size:CGSize) -> UIImage?{
-        if let imageDataFileURL = urlForFileNamed(self.imageName!) as URL? {
-         
-            return loadImage(imageUrl: imageDataFileURL, size: size)
-            
-        } else {
-            
-            return nil
+    func getUIImage(forSize size:CGSize) throws -> UIImage{
+        do {
+            let imageDataFileURL = try urlForFileNamed(self.imageName!)
+            return try loadImage(imageUrl: imageDataFileURL, size: size)
+        } catch {
+            print("Error getUIImage get URL:", error)
+            throw error
         }
     }
     
