@@ -8,117 +8,182 @@
 
 import UIKit
 
-/*func resizeImage(cfDataImg:CFData, size:CGSize, scale:CGFloat) -> UIImage {
-    
+
+let effects = [
+    "Filter":1,
+    "Mirror": 2,
+    "Rotate": 3,
+]
+
+enum convertImageError:Error {
+    case invalidFileURL
+    case invalidImageData
+    case invalidEffectName
+    case noSuchFilter
+    case invalidCreatingSourse
+}
+
+let filters = [
+    "CutColors": "CIPhotoEffectMono",
+]
+
+
+func loadImage(imageUrl:URL, size:CGSize, scale:CGFloat = 2.0) throws -> UIImage {
+
     let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
-    let imageSource = CGImageSourceCreateWithData(cfDataImg, imageSourceOptions)!
-    //let imageSource = CGImageSourceCreateWithURL(imageUrl as CFURL, imageSourceOptions)!
-    
+    guard let imageSource = CGImageSourceCreateWithURL(imageUrl as CFURL, imageSourceOptions) else {
+        throw convertImageError.invalidImageData
+    }
+
     let maxdimentionInPixels = max(size.width, size.height)*scale
-    let downSampleOptions =
-        [kCGImageSourceCreateThumbnailFromImageAlways: true,
-         kCGImageSourceShouldCacheImmediately: true,
-         kCGImageSourceCreateThumbnailWithTransform: true,
-         kCGImageSourceThumbnailMaxPixelSize: maxdimentionInPixels] as CFDictionary
-    let downSampledImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, downSampleOptions)!
+    let downSampleOptions = [
+        kCGImageSourceCreateThumbnailFromImageAlways: true,
+        kCGImageSourceShouldCacheImmediately: true,
+        kCGImageSourceCreateThumbnailWithTransform: true,
+        kCGImageSourceThumbnailMaxPixelSize:
+                            maxdimentionInPixels] as CFDictionary
     
+    guard let downSampledImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, downSampleOptions) else {
+        throw convertImageError.invalidCreatingSourse
+    }
+
     return UIImage(cgImage: downSampledImage)
+}
+
+
+func convertImageFromURL(imageUrl: URL, effect: String) throws -> UIImage? {
+    
+    guard let ciImageFromURL = CIImage(contentsOf: imageUrl) else {
+        throw convertImageError.invalidImageData
+    }
+    guard effects.keys.contains(effect) || filters.keys.contains(effect) else {
+        throw convertImageError.invalidEffectName
+    }
+    let converTask = filters.keys.contains(effect) ? "Filter" : effect
+    
+    switch effects[converTask] {
+    case effects["Filter"]:
+        return convertImageWithFilter(ciImage:ciImageFromURL, filterName: filters[effect]!)
+    case effects["Mirror"]:
+        return mirrorHorizontally(ciImage: ciImageFromURL)
+    case effects["Rotate"]:
+        return rotateImageLeft(ciImage: ciImageFromURL)
+    default:
+        return UIImage(ciImage: ciImageFromURL)
+    }
+    
+    /*do {
+        let ciImageFromURL = try getCIImageFromURL(imageUrl: imageUrl)
+        let resultCIImage =  try convertCIImage(ciImage: ciImageFromURL, with: effect)
+        
+        return UIImage(ciImage: resultCIImage!)
+        
+    } catch {
+        throw error
+    }*/
+}
+
+func getCIImageFromURL(imageUrl: URL) throws -> CIImage {
+    guard let ciImageFromURL = CIImage(contentsOf: imageUrl) else {
+        throw convertImageError.invalidImageData
+    }
+    return ciImageFromURL
+}
+
+/*
+func convertCIImage(ciImage: CIImage, with effect: String) throws -> CIImage? {
+    guard effects.keys.contains(effect) || filters.keys.contains(effect) else {
+        throw convertImageError.invalidEffectName
+    }
+    let converTask = filters.keys.contains(effect) ? "Filter" : effect
+    
+    switch effects[converTask] {
+    case effects["Filter"]:
+        return convertImageWithFilter(ciImage:ciImage, filterName: filters[effect]!)
+    case effects["Mirror"]:
+        return mirrorHorizontally(ciImage: ciImage)
+    case effects["Rotate"]:
+        return rotateImageLeft(ciImage: ciImage)
+    default:
+        return ciImage
+    }
 }*/
 
-func loadImage(imageUrl:URL, size:CGSize, scale:CGFloat = 2.0) -> UIImage? {
-
-    let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
-    let imageSource = CGImageSourceCreateWithURL(imageUrl as CFURL, imageSourceOptions)
-    if imageSource != nil {
+func convertImageWithFilter(ciImage:CIImage, filterName: String) -> UIImage? { //    class
     
-        let maxdimentionInPixels = max(size.width, size.height)*scale
-        let downSampleOptions =
-            [kCGImageSourceCreateThumbnailFromImageAlways: true,
-             kCGImageSourceShouldCacheImmediately: true,
-             kCGImageSourceCreateThumbnailWithTransform: true,
-                kCGImageSourceThumbnailMaxPixelSize: maxdimentionInPixels] as CFDictionary
-        let downSampledImage = CGImageSourceCreateThumbnailAtIndex(imageSource!, 0, downSampleOptions)!
+    let filter = CIFilter(name: filterName)
+    filter?.setValue(ciImage, forKey: "inputImage")
     
-        return UIImage(cgImage: downSampledImage)
-    } else {
-        return nil
-        
-    }
-}
-
-let blackWhiteConvert = "CutColors"
-let mirror = "Mirror"
-let rotate = "Rotate"
-
-func convertImageFromURL(imageUrl: URL?, effect: String) -> UIImage? {
+   // return filter?.outputImage
     
-    if  imageUrl != nil {
-        print(effect)
-        if effect == blackWhiteConvert {
-            return convertImageToBW(imageUrl: imageUrl!)
-        } else if effect == mirror {
-            return mirrorHorizontally(imageUrl: imageUrl!)
-        } else if effect == rotate {
-            return rotateImageLeft(imageUrl: imageUrl!)
-        }
-        else { //not described effect
-            print("Ask to conver to not described effect")
-            if let data = try? Data( contentsOf:imageUrl! as URL)
-            {
-               return UIImage( data:data)
-            } else {
-                return nil
-            }
-        }
-    } else {
-        return nil
-    }
-}
-
-func convertImageToBW(imageUrl: URL) -> UIImage { //    class
-    
-    let ciImageFromURL = CIImage(contentsOf: imageUrl)
-    
-    let filter = CIFilter(name: "CIPhotoEffectMono")
-    filter?.setValue(ciImageFromURL, forKey: "inputImage")
     
     let ciOutput = filter?.outputImage
-    let ciContext = CIContext()
-    let cgImage = ciContext.createCGImage(ciOutput!, from: (ciOutput?.extent)!)
     
-    return UIImage(cgImage: cgImage!)
+    let cgImage = CIContext().createCGImage(ciOutput!, from: (ciOutput?.extent)!)
+    
+    if cgImage == nil {
+        return UIImage(ciImage: ciImage) //return input image as result, can not convert
+    } else {
+        return UIImage(cgImage: cgImage!)
+    }
 }
 
-func mirrorHorizontally(imageUrl: URL)->UIImage{
-    
-    /*var retImg = image
-    if(image.imageOrientation != UIImage.Orientation.up){
-        UIGraphicsBeginImageContext(image.size)
-        image.draw(at: .zero)
-        let newImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        retImg = newImage ?? image
-    }*/
-    let ciImageFromURL = CIImage(contentsOf: imageUrl)
-    let ciOutput = ciImageFromURL?.transformed(by: CGAffineTransform.init(scaleX: -1, y: 1))
-    let ciContext = CIContext()
-    let cgImage = ciContext.createCGImage(ciOutput!, from: (ciOutput?.extent)!)
-    
-    return UIImage(cgImage: cgImage!)
+func mirrorHorizontally(ciImage: CIImage)->UIImage?{
+    //return ciImage.transformed(by: CGAffineTransform.init(scaleX: -1, y: 1))
+
+    let ciOutput = ciImage.transformed(by: CGAffineTransform.init(scaleX: -1, y: 1))
+    let cgImage = CIContext().createCGImage(ciOutput, from: (ciOutput.extent))
+    if cgImage == nil {
+        return UIImage(ciImage: ciImage) //return input image as result, can not convert
+    } else {
+        return UIImage(cgImage: cgImage!)
+    }
 }
 
-func rotateImageLeft(imageUrl: URL)->UIImage{
-    let ciImageFromURL = CIImage(contentsOf: imageUrl)
-    let ciOutput = ciImageFromURL?.transformed(by: CGAffineTransform.init(rotationAngle: -.pi/2))
-    let ciContext = CIContext()
-    let cgImage = ciContext.createCGImage(ciOutput!, from: (ciOutput?.extent)!)
+func rotateImageLeft(ciImage: CIImage)->UIImage?{
+   // return ciImage.transformed(by: CGAffineTransform.init(rotationAngle: -.pi/2))
+   
+    let ciOutput = ciImage.transformed(by: CGAffineTransform.init(rotationAngle: -.pi/2))
+    let cgImage = CIContext().createCGImage(ciOutput, from: (ciOutput.extent))
     
-    return UIImage(cgImage: cgImage!)
+    if cgImage == nil {
+        return UIImage(ciImage: ciImage) //return input image as result, can not convert
+    } else {
+        return UIImage(cgImage: cgImage!)
+    }
+
 }
 
 
-class ImageConvertor: NSObject {
-    /*weak var delegate: ImageConvectorProcessDelegate?
+/*func resizeImage(cfDataImg:CFData, size:CGSize, scale:CGFloat) -> UIImage {
+ 
+ let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
+ let imageSource = CGImageSourceCreateWithData(cfDataImg, imageSourceOptions)!
+ //let imageSource = CGImageSourceCreateWithURL(imageUrl as CFURL, imageSourceOptions)!
+ 
+ let maxdimentionInPixels = max(size.width, size.height)*scale
+ let downSampleOptions =
+ [kCGImageSourceCreateThumbnailFromImageAlways: true,
+ kCGImageSourceShouldCacheImmediately: true,
+ kCGImageSourceCreateThumbnailWithTransform: true,
+ kCGImageSourceThumbnailMaxPixelSize: maxdimentionInPixels] as CFDictionary
+ let downSampledImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, downSampleOptions)!
+ 
+ return UIImage(cgImage: downSampledImage)
+ }*/
+
+/*var retImg = image
+ if(image.imageOrientation != UIImage.Orientation.up){
+ UIGraphicsBeginImageContext(image.size)
+ image.draw(at: .zero)
+ let newImage = UIGraphicsGetImageFromCurrentImageContext()
+ UIGraphicsEndImageContext()
+ retImg = newImage ?? image
+ }*/
+
+/*class ImageConvertor: NSObject {
+
+    weak var delegate: ImageConvectorProcessDelegate?
     public class func convertImageInProcess (_ image: UIImage?, _ effect: String){
         var retImage:UIImage
         let startDate = NSDate.init()
@@ -149,7 +214,7 @@ class ImageConvertor: NSObject {
     
     
     
-    
+/*
     public class func convertImage(_ image: UIImage?, _ effect: String) -> UIImage? {
 
         if  image != nil {
@@ -210,4 +275,4 @@ class ImageConvertor: NSObject {
         let cgImage = ciContext.createCGImage(ciOutput!, from: (ciOutput?.extent)!)
         return  UIImage(cgImage: cgImage!, scale: 1, orientation:image.imageOrientation)
     }
-}
+}*/
