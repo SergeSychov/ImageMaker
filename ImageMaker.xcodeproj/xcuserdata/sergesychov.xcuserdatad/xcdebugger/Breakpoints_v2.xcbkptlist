@@ -10,13 +10,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ImageMaker/ViewController.swift"
-            timestampString = "583626667.109876"
+            timestampString = "583629209.740891"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "280"
-            endingLineNumber = "280"
-            landmarkName = "unknown"
-            landmarkType = "0">
+            startingLineNumber = "282"
+            endingLineNumber = "282"
+            landmarkName = "configureCell(_:)"
+            landmarkType = "7">
             <Locations>
                <Location
                   shouldBeEnabled = "No"
@@ -54,17 +54,17 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ImageMaker/ViewController.swift"
-            timestampString = "583626667.1115299"
+            timestampString = "583629209.741442"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "126"
-            endingLineNumber = "126"
-            landmarkName = "unknown"
-            landmarkType = "0">
+            startingLineNumber = "128"
+            endingLineNumber = "128"
+            landmarkName = "changedImgResultObj(resultImageObj:error:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -74,29 +74,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ImageMaker/ViewController.swift"
-            timestampString = "583626667.111679"
+            timestampString = "583629209.7417769"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "285"
-            endingLineNumber = "285"
-            landmarkName = "unknown"
-            landmarkType = "0">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "ImageMaker/ViewController.swift"
-            timestampString = "583626667.111807"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "375"
-            endingLineNumber = "375"
-            landmarkName = "unknown"
-            landmarkType = "0">
+            startingLineNumber = "287"
+            endingLineNumber = "287"
+            landmarkName = "collectionView(_:prefetchItemsAt:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -106,13 +90,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ImageMaker/ViewController.swift"
-            timestampString = "583626667.111903"
+            timestampString = "583629209.742105"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "40"
-            endingLineNumber = "40"
-            landmarkName = "unknown"
-            landmarkType = "0">
+            startingLineNumber = "376"
+            endingLineNumber = "376"
+            landmarkName = "getMainViewsPropertiesAndSetViews()"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -122,13 +106,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ImageMaker/ViewController.swift"
-            timestampString = "583626667.111994"
+            timestampString = "583629209.742434"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "98"
-            endingLineNumber = "98"
-            landmarkName = "unknown"
-            landmarkType = "0">
+            startingLineNumber = "42"
+            endingLineNumber = "42"
+            landmarkName = "viewDidLoad()"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -138,13 +122,29 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ImageMaker/ViewController.swift"
-            timestampString = "583626667.112101"
+            timestampString = "583629209.742783"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "391"
-            endingLineNumber = "391"
-            landmarkName = "unknown"
-            landmarkType = "0">
+            startingLineNumber = "100"
+            endingLineNumber = "100"
+            landmarkName = "convertImageAction(_:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ImageMaker/ViewController.swift"
+            timestampString = "583629209.743102"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "392"
+            endingLineNumber = "392"
+            landmarkName = "getMainViewsPropertiesAndSetViews()"
+            landmarkType = "7">
             <Locations>
                <Location
                   shouldBeEnabled = "No"
@@ -186,13 +186,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ImageMaker/ViewController.swift"
-            timestampString = "583626667.112175"
+            timestampString = "583629209.743431"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "394"
-            endingLineNumber = "394"
-            landmarkName = "unknown"
-            landmarkType = "0">
+            startingLineNumber = "395"
+            endingLineNumber = "395"
+            landmarkName = "getMainViewsPropertiesAndSetViews()"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -202,7 +202,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ImageMaker/ImageConvertor.swift"
-            timestampString = "583626667.11226"
+            timestampString = "583629209.743755"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "32"
@@ -214,46 +214,46 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ImageMaker/ViewController.swift"
-            timestampString = "583626667.112343"
+            timestampString = "583629209.744315"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "290"
-            endingLineNumber = "290"
-            landmarkName = "unknown"
-            landmarkType = "0">
+            startingLineNumber = "292"
+            endingLineNumber = "292"
+            landmarkName = "collectionView(_:prefetchItemsAt:)"
+            landmarkType = "7">
             <Locations>
                <Location
-                  shouldBeEnabled = "Yes"
+                  shouldBeEnabled = "No"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
                   symbolName = "ImageMaker.ViewController.collectionView(_: __C.UICollectionView, prefetchItemsAt: Swift.Array&lt;Foundation.IndexPath&gt;) -&gt; ()"
                   moduleName = "ImageMaker"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/sergesychov/Library/Mobile%20Documents/com~apple~CloudDocs/ImageMaker/ImageMaker/ViewController.swift"
-                  timestampString = "583617846.511726"
+                  timestampString = "583628365.943137"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "306"
-                  endingLineNumber = "306"
-                  offsetFromSymbolStart = "1920">
+                  startingLineNumber = "290"
+                  endingLineNumber = "290"
+                  offsetFromSymbolStart = "1732">
                </Location>
                <Location
-                  shouldBeEnabled = "Yes"
+                  shouldBeEnabled = "No"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
                   symbolName = "closure #1 () -&gt; () in ImageMaker.ViewController.collectionView(_: __C.UICollectionView, prefetchItemsAt: Swift.Array&lt;Foundation.IndexPath&gt;) -&gt; ()"
                   moduleName = "ImageMaker"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/sergesychov/Library/Mobile%20Documents/com~apple~CloudDocs/ImageMaker/ImageMaker/ViewController.swift"
-                  timestampString = "583617846.513992"
+                  timestampString = "583628365.947749"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "302"
-                  endingLineNumber = "302"
+                  startingLineNumber = "286"
+                  endingLineNumber = "286"
                   offsetFromSymbolStart = "292">
                </Location>
             </Locations>
@@ -262,17 +262,17 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ImageMaker/ResultImageObj.swift"
-            timestampString = "583626667.112417"
+            timestampString = "583629209.744887"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "61"
-            endingLineNumber = "61"
-            landmarkName = "unknown"
-            landmarkType = "0">
+            startingLineNumber = "57"
+            endingLineNumber = "57"
+            landmarkName = "init(name:delegate:notCompleatedEffect:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -282,7 +282,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ImageMaker/ImageConvertor.swift"
-            timestampString = "583626667.127139"
+            timestampString = "583629209.744978"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "55"
@@ -298,13 +298,109 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ImageMaker/ImageConvertor.swift"
-            timestampString = "583626667.127323"
+            timestampString = "583629209.7454849"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "102"
             endingLineNumber = "102"
             landmarkName = "convertCIImage(ciImage:with:)"
             landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ImageMaker/ResultImageObj.swift"
+            timestampString = "583629209.745988"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "93"
+            endingLineNumber = "93"
+            landmarkName = "applyImgConvertionWith(_:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ImageMaker/SaveLoadOperation.swift"
+            timestampString = "583629209.746088"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "78"
+            endingLineNumber = "78"
+            landmarkName = "unknown"
+            landmarkType = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ImageMaker/SaveLoadOperation.swift"
+            timestampString = "583629209.746572"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "126"
+            endingLineNumber = "126"
+            landmarkName = "unknown"
+            landmarkType = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ImageMaker/ViewController.swift"
+            timestampString = "583629209.746915"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "401"
+            endingLineNumber = "401"
+            landmarkName = "getMainViewsPropertiesAndSetViews()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ImageMaker/ViewController.swift"
+            timestampString = "583629209.747299"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "30"
+            endingLineNumber = "30"
+            landmarkName = "isUserChoosedNewImage"
+            landmarkType = "24">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ImageMaker/ViewController.swift"
+            timestampString = "583629209.74766"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "33"
+            endingLineNumber = "33"
+            landmarkName = "isUserChoosedNewImage"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

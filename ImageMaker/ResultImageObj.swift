@@ -52,11 +52,7 @@ class ResultImageObj: NSObject {
         
         if notCompleatedEffect != nil {
             //if load obj with not compleated effect - start convertion
-            do {
-                self.applyImgConvertionWith(notCompleatedEffect!)
-            } catch {
-                print("ResObj init from file can't create URL for name", error)
-            }
+            self.applyImgConvertionWith(notCompleatedEffect!)
         }
     }
     
@@ -66,7 +62,22 @@ class ResultImageObj: NSObject {
         
         DispatchQueue.global(qos: .userInitiated).async {
             var aplyConvertionError:Error?
-            
+            var convertedUIImage: UIImage?
+            do {
+                let inputCiImage = try getCIImageFromURL(urlForFileNamed(self.imageName))
+                let outCiImage = try convertCIImage(ciImage: inputCiImage, with: effect)
+                let convertedUIImage = uiImageFromCiImage(outCiImage)
+                if convertedUIImage != nil {
+                    if saveImage(image:convertedUIImage!, name:self.imageName){
+                        print("saved converted image")
+                    }
+                }
+                
+            } catch {
+                print("Convertion error: ", error)
+                aplyConvertionError = error
+            }
+            /*
             var convertedUIImage: UIImage?
             var isNewImageSaved = false
             do {
@@ -75,7 +86,7 @@ class ResultImageObj: NSObject {
             } catch {
                 print("Convertion error: ", error)
                 aplyConvertionError = error
-            }
+            }*/
             
             DispatchQueue.main.async {
                 if effect == self.currentConvertionEffect {//if it is atual request.

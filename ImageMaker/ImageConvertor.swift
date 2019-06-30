@@ -54,7 +54,7 @@ func loadImage(imageUrl:URL, size:CGSize, scale:CGFloat = 2.0) throws -> UIImage
 func convertImageFromURL(imageUrl: URL, effect: String) throws -> UIImage? {
     
     do {
-        let ciImageFromURL = try getCIImageFromURL(imageUrl: imageUrl)
+        let ciImageFromURL = try getCIImageFromURL(imageUrl)
         let outCiImage = try convertCIImage(ciImage: ciImageFromURL, with: effect)
 
         return uiImageFromCiImage(outCiImage)
@@ -64,7 +64,7 @@ func convertImageFromURL(imageUrl: URL, effect: String) throws -> UIImage? {
     }
 }
 
-func getCIImageFromURL(imageUrl: URL) throws -> CIImage {
+func getCIImageFromURL(_ imageUrl: URL) throws -> CIImage {
     guard let ciImageFromURL = CIImage(contentsOf: imageUrl) else {
         throw convertImageError.invalidImageData
     }

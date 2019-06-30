@@ -26,9 +26,11 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     var inputImageUrl: URL? //need only for save
     var isUserChoosedNewImage: Bool{
         get {
-            return UserDefaults.standard.bool(forKey: "isUserChoosedNewImage")
+            let isUserChoosed = UserDefaults.standard.bool(forKey: "isUserChoosedNewImage")
+            return isUserChoosed //UserDefaults.standard.bool(forKey: "isUserChoosedNewImage")
         }
         set (newValue){
+            
             UserDefaults.standard.set(newValue, forKey: "isUserChoosedNewImage")
         }
     }
@@ -364,7 +366,6 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             do {
                 self.inputImageView.image = try loadImage(imageUrl: inputImageUrl!, size: self.inputImageView.bounds.size)
                 self.resultImageView.image = nil
-                self.isUserChoosedNewImage = true
 
             } catch {
                 print("getMainViewsPropertiesAndSetViews get inputImageView error: ", error)
