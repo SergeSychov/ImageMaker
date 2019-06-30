@@ -25,9 +25,6 @@ class ResultImageObj: NSObject {
             return processingDoneInPercent
         }
     }
-    var workProccess:DispatchWorkItem?
-    //Create dispatch group
-    let dispatchGroup = DispatchGroup()
 
     //create new imgObj from Image if Image = nil create an empty Obj
     init(_ inputImage:UIImage?, delegate:ResultImageObjDelegate?){
@@ -68,12 +65,7 @@ class ResultImageObj: NSObject {
         self.processingDoneInPercent = 0.00 //start convertation
         self.currentConvertionEffect = effect
         
-        if self.workProccess != nil {
-            self.workProccess!.cancel()
-            
-        } //stop previous launched process
-        
-        let workItem = DispatchWorkItem {
+        DispatchQueue.global(qos: .userInitiated).async {
             var aplyConvertionError:Error?
             //1. save input DATA to obj URL for reasons if convertion will not be compleated till App go off
             do {
@@ -100,19 +92,13 @@ class ResultImageObj: NSObject {
                 if effect == self.currentConvertionEffect {//if it is atual request.
                     self.processingDoneInPercent = 1.00
                     self.currentConvertionEffect = nil
-                    self.workProccess = nil
                     if self.delegate != nil {
                         self.delegate!.changedImgResultObj(resultImageObj: self, error: aplyConvertionError)
-                        //self.delegate!.changedImgResultObj(resultImageObj:self )
                     }
                 }
                 
             }
         }
-        self.workProccess = workItem //set as current work process
-
-        // execute the workItem with dispatchGroup
-        DispatchQueue.global().async(group: dispatchGroup, execute: workItem)
     }
     
     func getURLOfImageFile() throws -> URL{
