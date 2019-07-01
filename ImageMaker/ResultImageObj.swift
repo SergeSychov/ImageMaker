@@ -50,23 +50,24 @@ class ResultImageObj: NSObject {
     }
     
     //create new obj from saved file
-    init(name:String, delegate:ResultImageObjDelegate?, notCompleatedEffect: String?){
-        self.imageName = name
-        self.delegate = delegate
-        self.processingDoneInPercent = 1.00
+    init?(name:String, delegate:ResultImageObjDelegate?, notCompleatedEffect: String?){
         
-        super.init()
-        
-        if notCompleatedEffect != nil {
-            do {
-            inputCiImage = try getCIImageFromURL(urlForFileNamed(self.imageName))
-            //if load obj with not compleated effect - start convertion
-            self.applyImgConvertionWith(notCompleatedEffect!)
-            }
-            catch {
-                print("init with string error: ", error)
+        do {
+            _ = try getCIImageFromURL(urlForFileNamed(name)) //if thw file is readable as image
+            self.imageName = name
+            self.delegate = delegate
+            self.processingDoneInPercent = 1.00
+             super.init()
+            if notCompleatedEffect != nil {
+                //if load obj with not compleated effect - start convertion
+                self.applyImgConvertionWith(notCompleatedEffect!)
             }
         }
+        catch {
+            print("init with string error: ", error)
+            return nil
+        }
+
     }
     
     func applyImgConvertionWith(_ effect: String){
@@ -75,15 +76,22 @@ class ResultImageObj: NSObject {
         
         DispatchQueue.global(qos: .userInitiated).async {
             var aplyConvertionError:Error?
+            var outCiImage: CIImage?
             do {
-                let inputCiImage = try getCIImageFromURL(urlForFileNamed(self.imageName))
-                let outCiImage = try convertCIImage(ciImage: inputCiImage, with: effect)
+                if self.inputCiImage != nil {
+                    outCiImage = try convertCIImage(ciImage: self.inputCiImage!, with: effect)
+                } else {
+                    outCiImage = try convertCIImage(ciImage: getCIImageFromURL(urlForFileNamed(self.imageName)), with: effect)
+                }
+                
+                //let inputCiImage = try getCIImageFromURL(urlForFileNamed(self.imageName))
+                //outCiImage = try convertCIImage(ciImage: self.inputCiImage!, with: effect)
                 let convertedUIImage = uiImageFromCiImage(outCiImage)
-                if convertedUIImage != nil {
+                //if convertedUIImage != nil {
                     if saveImage(image:convertedUIImage!, name:self.imageName){
                         print("saved converted image")
                     }
-                }
+               // }*/
                 
             } catch {
                 print("Convertion error: ", error)
@@ -92,6 +100,9 @@ class ResultImageObj: NSObject {
             
             DispatchQueue.main.async {
                 if effect == self.currentConvertionEffect {//if it is atual request.
+                    if outCiImage != nil {
+                        self.inputCiImage = outCiImage!
+                    }
                     self.processingDoneInPercent = 1.00
                     self.currentConvertionEffect = nil
                     if self.delegate != nil {
