@@ -18,6 +18,7 @@ class ResultImageObj: NSObject {
     //private var resultImg: UIImage?
     var imageName:String
     weak var delegate: ResultImageObjDelegate?
+    var inputCiImage: CIImage?
     var processingDoneInPercent: CGFloat = 0.00 //default value. Value to show how image is converted from
     var currentConvertionEffect: String? //if not compleated convertion need to save that information
     public var convertProcessDone: CGFloat {
@@ -32,13 +33,18 @@ class ResultImageObj: NSObject {
 
         do {
             self.imageName = "ImageMaker_" + ProcessInfo().globallyUniqueString + ".jpg" //create unic name for saved image
+            inputCiImage = try getCIImageFromURL(inputImageURL)
+            if copyDataToFile(at: inputImageURL, fileName: self.imageName){
+                print("InputData saved")
+            }
+            /*
             let inputData = try NSData(contentsOf: inputImageURL) as NSData
             if saveImageData(data: inputData, imageName: self.imageName) != nil {
                 print("InputData saved")
-            }
+            }*/
             super.init()
         } catch {
-            print("NSData error: ", error)
+            print("init with image error: ", error)
             return nil
         }
     }
@@ -48,11 +54,18 @@ class ResultImageObj: NSObject {
         self.imageName = name
         self.delegate = delegate
         self.processingDoneInPercent = 1.00
+        
         super.init()
         
         if notCompleatedEffect != nil {
+            do {
+            inputCiImage = try getCIImageFromURL(urlForFileNamed(self.imageName))
             //if load obj with not compleated effect - start convertion
             self.applyImgConvertionWith(notCompleatedEffect!)
+            }
+            catch {
+                print("init with string error: ", error)
+            }
         }
     }
     
@@ -62,7 +75,6 @@ class ResultImageObj: NSObject {
         
         DispatchQueue.global(qos: .userInitiated).async {
             var aplyConvertionError:Error?
-            var convertedUIImage: UIImage?
             do {
                 let inputCiImage = try getCIImageFromURL(urlForFileNamed(self.imageName))
                 let outCiImage = try convertCIImage(ciImage: inputCiImage, with: effect)
@@ -77,16 +89,6 @@ class ResultImageObj: NSObject {
                 print("Convertion error: ", error)
                 aplyConvertionError = error
             }
-            /*
-            var convertedUIImage: UIImage?
-            var isNewImageSaved = false
-            do {
-                convertedUIImage = try convertImageFromURL(imageUrl:urlForFileNamed(self.imageName), effect:effect)
-                isNewImageSaved = saveImage(image:convertedUIImage!, name:self.imageName)
-            } catch {
-                print("Convertion error: ", error)
-                aplyConvertionError = error
-            }*/
             
             DispatchQueue.main.async {
                 if effect == self.currentConvertionEffect {//if it is atual request.
