@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import MobileCoreServices
 
 
 let effects = [
@@ -26,64 +27,6 @@ enum convertImageError:Error {
 let filters = [
     "CutColors": "CIPhotoEffectMono",
 ]
-
-
-func loadImage(imageUrl:URL, size:CGSize, scale:CGFloat = 2.0) throws -> UIImage {
-
-    let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
-    guard let imageSource = CGImageSourceCreateWithURL(imageUrl as CFURL, imageSourceOptions) else {
-        throw convertImageError.invalidImageData
-    }
-
-    let maxdimentionInPixels = max(size.width, size.height)*scale
-    let downSampleOptions = [
-        kCGImageSourceCreateThumbnailFromImageAlways: true,
-        kCGImageSourceShouldCacheImmediately: true,
-        kCGImageSourceCreateThumbnailWithTransform: true,
-        kCGImageSourceThumbnailMaxPixelSize:
-                            maxdimentionInPixels] as CFDictionary
-    
-    guard let downSampledImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, downSampleOptions) else {
-        throw convertImageError.invalidCreatingSourse
-    }
-
-    return UIImage(cgImage: downSampledImage)
-}
-
-
-func convertImageFromURL(imageUrl: URL, effect: String) throws -> UIImage? {
-    
-    do {
-        let ciImageFromURL = try getCIImageFromURL(imageUrl)
-        let outCiImage = try convertCIImage(ciImage: ciImageFromURL, with: effect)
-
-        return uiImageFromCiImage(outCiImage)
-    } catch {
-        print(error)
-        return nil
-    }
-}
-
-func getCIImageFromURL(_ imageUrl: URL) throws -> CIImage {
-    guard let ciImageFromURL = CIImage(contentsOf: imageUrl) else {
-        throw convertImageError.invalidImageData
-    }
-    return ciImageFromURL
-}
-
-func uiImageFromCiImage(_ ciImage:CIImage?) -> UIImage? {
-    if ciImage != nil {
-        let cgImage = CIContext().createCGImage(ciImage!, from: (ciImage!.extent))
-        
-        if cgImage == nil {
-            return UIImage(ciImage: ciImage!) //return input image as result, can not convert
-        } else {
-            return UIImage(cgImage: cgImage!)
-        }
-    } else {
-        return nil
-    }
-}
 
 
 func convertCIImage(ciImage: CIImage, with effect: String) throws -> CIImage? {
@@ -120,6 +63,163 @@ func mirrorHorizontally(ciImage: CIImage)->CIImage?{
 func rotateImageLeft(ciImage: CIImage)->CIImage?{
     return ciImage.transformed(by: CGAffineTransform.init(rotationAngle: -.pi/2))
 }
+
+
+//============== LOAD AND USE IMAGE ===============================================================
+func getCIImageFromURL(_ imageUrl: URL) throws -> CIImage {
+    guard let ciImageFromURL = CIImage(contentsOf: imageUrl) else {
+        throw convertImageError.invalidImageData
+    }
+    return ciImageFromURL
+}
+
+
+func uiImageFromCiImage(_ ciImage:CIImage?) -> UIImage? {
+    if ciImage != nil {
+        let cgImage = CIContext().createCGImage(ciImage!, from: (ciImage!.extent))
+        
+        if cgImage == nil {
+            return UIImage(ciImage: ciImage!) //return input image as result, can not convert
+        } else {
+            return UIImage(cgImage: cgImage!)
+        }
+    } else {
+        return nil
+    }
+}
+
+
+
+func resaveForRightOrientationImageFrom(url: URL, toFile name: String) -> Bool {
+    let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
+    guard let imageSource = CGImageSourceCreateWithURL(url as CFURL, imageSourceOptions) else {
+        //throw convertImageError.invalidImageData
+        return false
+    }
+    
+    let downSampleOptions = [kCGImageSourceCreateThumbnailFromImageAlways: true,
+                             kCGImageSourceCreateThumbnailWithTransform: true,] as CFDictionary
+    
+    guard let downSampledImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, downSampleOptions) else {
+        print("chekImageOnOrientationAndReturnFrom Can't create image with new orientation")
+        return false
+    }
+    do {
+        let fileURL = try urlForFileNamed(name) as CFURL
+        let dest = CGImageDestinationCreateWithURL(fileURL, kUTTypeJPEG2000, 1, nil)
+        if dest != nil {
+            CGImageDestinationAddImage(dest!, downSampledImage, nil)
+            if !CGImageDestinationFinalize(dest!){
+                print("chekImageOnOrientationAndReturnFrom cant save file")
+                return false
+            } else {
+                print("chekImageOnOrientationAndReturnFrom File Saved")
+                //return url
+                return true
+            }
+        } else {
+            print("chekImageOnOrientationAndReturnFrom cna't create destination")
+            return false
+        }
+        
+    }
+        
+    catch {
+        print("chekImageOnOrientationAndReturnFrom can't create URL")
+        return false
+    }
+}
+
+
+func loadImage(imageUrl:URL, size:CGSize, scale:CGFloat = 2.0) throws -> UIImage {
+    
+    let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
+    guard let imageSource = CGImageSourceCreateWithURL(imageUrl as CFURL, imageSourceOptions) else {
+        throw convertImageError.invalidImageData
+    }
+    
+    let maxdimentionInPixels = max(size.width, size.height)*scale
+    let downSampleOptions = [
+        kCGImageSourceCreateThumbnailFromImageAlways: true,
+        kCGImageSourceShouldCacheImmediately: true,
+        kCGImageSourceCreateThumbnailWithTransform: true,
+        kCGImageSourceThumbnailMaxPixelSize: maxdimentionInPixels/*,
+         kCGImagePropertyOrientation: 1*/] as CFDictionary
+    
+    guard let downSampledImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, downSampleOptions) else {
+        throw convertImageError.invalidCreatingSourse
+    }
+    
+    return UIImage(cgImage: downSampledImage)
+}
+
+//==================== not used in APP ==============================================
+/*
+ 
+ func convertImageFromURL(imageUrl: URL, effect: String) throws -> UIImage? {
+ 
+ do {
+ let ciImageFromURL = try getCIImageFromURL(imageUrl)
+ let outCiImage = try convertCIImage(ciImage: ciImageFromURL, with: effect)
+ 
+ return uiImageFromCiImage(outCiImage)
+ } catch {
+ print(error)
+ return nil
+ }
+ }
+*/
+
+/*
+func chekImageOnOrientationAndReturnFrom(url:URL)-> URL {
+    let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
+    guard let imageSource = CGImageSourceCreateWithURL(url as CFURL, imageSourceOptions) else {
+        //throw convertImageError.invalidImageData
+        return url
+    }
+    
+    let options = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as Dictionary?
+    if (options != nil) && (options![kCGImagePropertyOrientation] != nil) && (options![kCGImagePropertyOrientation] as! Int != 1){
+        //create image with normal orientation
+        let downSampleOptions = [kCGImageSourceCreateThumbnailFromImageAlways: true,
+                                 kCGImageSourceCreateThumbnailWithTransform: true,] as CFDictionary
+        
+        guard let downSampledImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, downSampleOptions) else {
+            print("chekImageOnOrientationAndReturnFrom Can't create image with new orientation")
+            return url
+        }
+        
+        do {
+            let fileURL = try urlForFileNamed(tempPhotoName) as CFURL
+            let dest = CGImageDestinationCreateWithURL(fileURL, kUTTypeJPEG2000, 1, nil)
+            if dest != nil {
+                CGImageDestinationAddImage(dest!, downSampledImage, nil)
+                if !CGImageDestinationFinalize(dest!){
+                    print("chekImageOnOrientationAndReturnFrom cant save file")
+                    return url
+                } else {
+                    print("chekImageOnOrientationAndReturnFrom File Saved")
+                    //return url
+                    return fileURL as URL
+                }
+            } else {
+                print("chekImageOnOrientationAndReturnFrom cna't create destination")
+                return url
+            }
+            
+        }
+            
+        catch {
+            print("chekImageOnOrientationAndReturnFrom can't create URL")
+            return url
+        }
+    } else {
+        print("normal or without options")
+        return url
+    }
+}*/
+//===========================================================
+
 
 
 /*func resizeImage(cfDataImg:CFData, size:CGSize, scale:CGFloat) -> UIImage {
