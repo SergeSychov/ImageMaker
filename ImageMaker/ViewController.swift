@@ -72,8 +72,9 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             //2. set input ImageView
             inputImageView.image = try loadImage(imageUrl: imageURL, size: inputImageView.bounds.size)
             inputImageUrl  = imageURL
+
             DispatchQueue.global(qos: .default).async { //save data from url to app directory
-                let successCopy = copyDataToFile(at: imageURL, fileName: inputImageName)
+                let successCopy = resaveForRightOrientationImageFrom(url: imageURL, toFile: inputImageName)
                 DispatchQueue.main.async {
                     if successCopy { //if data copied successfuly
                         do {  //try to get URL for saved file
