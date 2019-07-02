@@ -100,9 +100,10 @@ class ResultImageObj: NSObject {
             
             DispatchQueue.main.async {
                 if effect == self.currentConvertionEffect {//if it is atual request.
-                    if outCiImage != nil {
-                        self.inputCiImage = outCiImage!
-                    }
+                    //if outCiImage != nil {
+                      //  self.inputCiImage = outCiImage!
+                    //}
+                    self.inputCiImage = nil
                     self.processingDoneInPercent = 1.00
                     self.currentConvertionEffect = nil
                     if self.delegate != nil {
