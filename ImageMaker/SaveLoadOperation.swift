@@ -8,67 +8,51 @@
 import UIKit
 import Foundation
 
-func copyDataToFile(at:URL, fileName: String) -> Bool{ //not important process
-    
-    if let fileURL = urlForFileNamed(fileName) as URL? {
-        
-        //Checks if file exists, remove it
-        if FileManager.default.fileExists(atPath: fileURL.path) {
-            do {
-                //remove old img
-                try FileManager.default.removeItem(atPath: fileURL.path)
-            } catch let removeError {
-                print("not remove img", removeError)
-            }
-        }
-        
-        do {
-            try FileManager.default.copyItem(at: at, to: fileURL)
-            print("copyData done")
-            return true
-        } catch{
-            print("copyData error", error)
-            return false
-        }
-    } else {
-        print("copyData couldn't get URL for name")
-        return false
-    }
+enum saveLoadOperationError:Error {
+    case invalidFileURL
+    case invalidImageData
+    case invalidEffectName
+    case noSuchFilter
 }
 
 
-func urlForFileNamed(_ name:String)-> URL? {
-    if let directory = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false) as URL {
+func urlForFileNamed(_ name:String) throws -> URL {
+    do {
+        let directory = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
         return directory.appendingPathComponent(name)
-    } else {
-        return nil
+    } catch {
+        print("urlForFileNamed can't return URL", error)
+        throw error
     }
 }
 
 func getUrlForExistingFile(_ name:String)-> URL? {
-    var retUrl:URL?
-    let url = urlForFileNamed(name)
-    if url != nil {
-        if FileManager.default.fileExists(atPath: url!.path) {
-            retUrl = url
-        }
+
+    do {
+        let url = try urlForFileNamed(name)
+        if FileManager.default.fileExists(atPath: url.path) {
+            return url
+        } else { return nil }
+            
+    } catch {
+        print("getUrlForExistingFile can't get URL for name:", error)
+        return nil
     }
-    return retUrl
 }
 
 func saveArray(resultObjsStorage: [ResultImageObj], name:String) -> Bool{
 
-    if let fileURL = urlForFileNamed(name) as URL? {
+    do {
+        let fileURL = try urlForFileNamed(name)
         
         var nameStringArray = [String]()
         for item in resultObjsStorage {
-            if item.imageName != nil {
-                var savedString = item.imageName!
+                var savedString = item.imageName
                 if item.currentConvertionEffect != nil {//if object hase not compleated conversion
                     savedString = savedString + "_effect_" + item.currentConvertionEffect!
                 }
+                //save only image's names as strings array
                 nameStringArray.append(savedString) //THINK about emty obj
-            }
         }
         
         //Checks if file exists, remove it
@@ -86,25 +70,23 @@ func saveArray(resultObjsStorage: [ResultImageObj], name:String) -> Bool{
             try NSKeyedArchiver.archivedData(withRootObject: nameStringArray).write(to: fileURL)
             print("Array saved succesufully")
             return true
-
+            
         } catch let saveError {
             print("not save array", saveError)
             return false
         }
-    } else {
-        print("saveArray couldn't get URL for name")
+    } catch {
+        print("saveArray can't get URL for name:", error)
         return false
     }
-    //save only image names as strings array
-    
 }
 
 
 
 func getSavedResultStorageWithName(name: String, delegate: ResultImageObjDelegate) -> [ResultImageObj] {
     
-    if let fileURL = urlForFileNamed(name) as URL? {
-
+    do {
+        let fileURL = try urlForFileNamed(name)
         guard let namesArray = NSKeyedUnarchiver.unarchiveObject(withFile: fileURL.path) as? [String] else {
             print("getSavedResultStorageWithName no archive in file")
             return [ResultImageObj]()
@@ -114,45 +96,38 @@ func getSavedResultStorageWithName(name: String, delegate: ResultImageObjDelegat
         for item in namesArray {
             var imageName = item
             var effectStr:String?
+            
             if let effectRange = item.range(of: "_effect_"){
                 //if there is effect string - convertion didn't compleated, set parameters and start convertion
                 imageName = String(item[..<effectRange.lowerBound])
                 effectStr = String(item[effectRange.upperBound...])
             }
-            resultObjsStorage.append(ResultImageObj(name: imageName, delegate: delegate, notCompleatedEffect: effectStr))
+            
+            let resObj = ResultImageObj(name: imageName, delegate: delegate, notCompleatedEffect: effectStr)
+            if resObj != nil {
+                resultObjsStorage.append(resObj!)
+            } else {
+                //remove from app dir not necessary file in background
+                DispatchQueue.global(qos: .background).async {
+                    if removeFile(named: imageName) {
+                        print("not aded to array and removed from disc")
+                    }
+                }
+            }
         }
         return resultObjsStorage
         
-    } else {
-        print("getSavedResultStorageWithName can;t get URL for name")
+    } catch {
+        print("getSavedResultStorageWithName can't get URL for name:", error)
         return [ResultImageObj]()
     }
+
 }
-
-
-/*
-func getSavedResultStorageFromURL (url: URL, delegate: ResultImageObjDelegate) -> [ResultImageObj]? {
-    
-    let namesArrayOne = NSKeyedUnarchiver.unarchiveObject(withFile: url.path)
-        guard let namesArray = NSKeyedUnarchiver.unarchiveObject(withFile: url.path) as? [String] else { return [ResultImageObj]() }
-        var resultObjsStorage = [ResultImageObj]()
-        for item in namesArray {
-            var imageName = item
-            var effectStr:String?
-            if let effectRange = item.range(of: "_effect_"){
-                //if there is effect string - convertion didn't compleated, set parameters and start convertion
-                imageName = String(item[..<effectRange.lowerBound])
-               effectStr = String(item[effectRange.upperBound...])
-            }
-            resultObjsStorage.append(ResultImageObj(name: imageName, delegate: delegate, notCompleatedEffect: effectStr))
-        }
-        return resultObjsStorage
-}*/
 
 func clearStorage(resultObjsStorage: [ResultImageObj])-> Bool{
     var success = true
     for item in resultObjsStorage {
-        if !removeFile(named: item.imageName!) {
+        if !removeFile(named: item.imageName) {
             print("not all disc storage have cleaned")
             success = false
         }
@@ -241,3 +216,55 @@ func getSavedImage(named: String) -> UIImage? {
     }
     return nil
 }
+//=======================NOT USES IN APP ================================
+
+/*
+func copyDataToFile(at:URL, fileName: String) -> Bool{ //not important process
+    
+    do {
+        let fileURL = try urlForFileNamed(fileName)
+        //Checks if file exists, remove it
+        if FileManager.default.fileExists(atPath: fileURL.path) {
+            do {
+                //remove old img
+                try FileManager.default.removeItem(atPath: fileURL.path)
+            } catch let removeError {
+                print("not remove img", removeError)
+            }
+        }
+        
+        do {
+            try FileManager.default.copyItem(at: at, to: fileURL)
+            print("copyDataToFile done")
+            return true
+        } catch{
+            print("copyDataToFile error", error)
+            return false
+        }
+    } catch {
+        print("copyDataToFile can't get url for name:", error)
+        return false
+    }
+}
+*/
+
+/*
+func getSavedResultStorageFromURL (url: URL, delegate: ResultImageObjDelegate) -> [ResultImageObj]? {
+    
+    let namesArrayOne = NSKeyedUnarchiver.unarchiveObject(withFile: url.path)
+    guard let namesArray = NSKeyedUnarchiver.unarchiveObject(withFile: url.path) as? [String] else { return [ResultImageObj]() }
+    var resultObjsStorage = [ResultImageObj]()
+    for item in namesArray {
+        var imageName = item
+        var effectStr:String?
+        if let effectRange = item.range(of: "_effect_"){
+            //if there is effect string - convertion didn't compleated, set parameters and start convertion
+            imageName = String(item[..<effectRange.lowerBound])
+            effectStr = String(item[effectRange.upperBound...])
+        }
+        resultObjsStorage.append(ResultImageObj(name: imageName, delegate: delegate, notCompleatedEffect: effectStr))
+    }
+    return resultObjsStorage
+} */
+ 
+//=======================================================================
