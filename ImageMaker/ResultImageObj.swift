@@ -26,6 +26,7 @@ class ResultImageObj: NSObject {
             return processingDoneInPercent
         }
     }
+    let convertOperationsQueue = OperationQueue()
 
     //create new imgObj from Image if Image = nil create an empty Obj
     init?(_ inputImageURL:URL, delegate:ResultImageObjDelegate?){
@@ -74,6 +75,21 @@ class ResultImageObj: NSObject {
         self.processingDoneInPercent = 0.00 //start convertation
         self.currentConvertionEffect = effect
         
+        let convertOperation = ConvertOperation(self.imageName, effect, nil)
+        convertOperation.completionBlock = {
+            DispatchQueue.main.async{
+                //self.inputCiImage = nil
+                self.processingDoneInPercent = 1.00
+                self.currentConvertionEffect = nil
+                if self.delegate != nil {
+                    self.delegate!.changedImgResultObj(resultImageObj: self, error: convertOperation.convertionError)
+                }
+            }
+        }
+        
+        convertOperationsQueue.addOperation(convertOperation)
+        
+        /*
         DispatchQueue.global(qos: .userInitiated).async {
             var aplyConvertionError:Error?
             var outCiImage: CIImage?
@@ -91,7 +107,7 @@ class ResultImageObj: NSObject {
                     if saveImage(image:convertedUIImage!, name:self.imageName){
                         print("saved converted image")
                     }
-               // }*/
+               // }
                 
             } catch {
                 print("Convertion error: ", error)
@@ -112,7 +128,7 @@ class ResultImageObj: NSObject {
                 }
                 
             }
-        }
+        }*/
     }
 
     func getURLOfImageFile() throws -> URL{
@@ -131,6 +147,48 @@ class ResultImageObj: NSObject {
         } catch {
             print("Error getUIImage get URL:", error)
             throw error
+        }
+    }
+}
+
+class ConvertOperation: Operation{
+    var inputCiImage:CIImage?
+    let imageName: String
+    let effect: String
+    var outCiImage:CIImage?
+    var convertionError:Error?
+    
+    init(_ imageName:String, _ effect:String, _ inputCiImage:CIImage?){
+        self.imageName = imageName
+        self.effect = effect
+        if inputCiImage != nil {
+            self.inputCiImage = inputCiImage!
+        }
+    }
+    
+    
+    override func main(){
+        if isCancelled {
+            return
+        }
+        
+        //var aplyConvertionError:Error?
+        var outCiImage: CIImage?
+        do {
+            if self.inputCiImage != nil {
+                outCiImage = try convertCIImage(ciImage: self.inputCiImage!, with: effect)
+            } else {
+                outCiImage = try convertCIImage(ciImage: getCIImageFromURL(urlForFileNamed(self.imageName)), with: effect)
+            }
+
+            if let convertedUIImage = uiImageFromCiImage(outCiImage) {
+                if saveImage(image:convertedUIImage, name:self.imageName){
+                    print("saved converted image")
+                }
+            }
+        } catch {
+            print("Convertion error: ", error)
+            convertionError = error
         }
     }
 }
