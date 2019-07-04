@@ -75,10 +75,14 @@ class ResultImageObj: NSObject {
         self.processingDoneInPercent = 0.00 //start convertation
         self.currentConvertionEffect = effect
         
-        let convertOperation = ConvertOperation(self.imageName, effect, nil)
+        let getCiImageOperation = GetCIImageOperation(self.imageName)
+        convertOperationsQueue.addOperation(getCiImageOperation)
+        
+        let convertOperation = ConvertOperation( effect, nil)
+        convertOperation.addDependency(getCiImageOperation)
         convertOperationsQueue.addOperation(convertOperation)
 
-        let saveOperation = saveUIImageOperation(self.imageName, nil)
+        let saveOperation = SaveUIImageOperation(self.imageName, nil)
         saveOperation.addDependency(convertOperation)
         saveOperation.completionBlock = {
             DispatchQueue.main.async{
@@ -117,10 +121,36 @@ protocol passCiImage {
     var ciImage:CIImage? {get}
 }
 
+class GetCIImageOperation: Operation, passCiImage{
+
+    let imageName: String
+    var outCiImage:CIImage?
+    //passing protocol
+    var ciImage: CIImage? {return outCiImage}
+    
+    init(_ imageName:String){
+        self.imageName = imageName
+    }
+    
+    override func main(){
+        if isCancelled {
+            return
+        }
+        
+        do {
+            outCiImage = try getCIImageFromURL(urlForFileNamed(self.imageName))
+        }
+        catch {
+            print("getCIImageFromURL error: ", error)
+        }
+        print("GetCIImageOperation")
+    }
+}
+
 class ConvertOperation: Operation, passCiImage{
     
-    var inputCiImage:CIImage?
-    let imageName: String
+    private let _inputCiImage:CIImage?
+    //let imageName: String
     let effect: String
     var outCiImage:CIImage?
     //var convertionError:Error?
@@ -128,12 +158,23 @@ class ConvertOperation: Operation, passCiImage{
     //passing protocol
     var ciImage: CIImage? {return outCiImage}
     
-    init(_ imageName:String, _ effect:String, _ inputCiImage:CIImage?){
-        self.imageName = imageName
-        self.effect = effect
-        if inputCiImage != nil {
-            self.inputCiImage = inputCiImage!
+    var inputCiImage:CIImage? {
+        var image: CIImage?
+        if let inputCiImage = self._inputCiImage {
+            image = inputCiImage
+        } else if let depedencie = dependencies
+            .filter({$0 is passCiImage})
+            .first as? passCiImage {
+            image = depedencie.ciImage
         }
+        return image
+    }
+    
+    init( _ effect:String, _ inputCiImage:CIImage?){
+       // self.imageName = imageName
+        self.effect = effect
+        self._inputCiImage = inputCiImage
+
     }
     
     override func main(){
@@ -144,18 +185,16 @@ class ConvertOperation: Operation, passCiImage{
         do {
             if self.inputCiImage != nil {
                 outCiImage = try convertCIImage(ciImage: self.inputCiImage!, with: effect)
-            } else {
-                outCiImage = try convertCIImage(ciImage: getCIImageFromURL(urlForFileNamed(self.imageName)), with: effect)
             }
-
-        } catch {
-            print("Convertion error: ", error)
-           // convertionError = error
         }
+        catch {
+            print("Convertion error:", error)
+        }
+        print("ConvertOperation: ", effect)
     }
 }
 
-class saveUIImageOperation: Operation {
+class SaveUIImageOperation: Operation {
     let fileName:String
     private let _inputCiImage:CIImage?
     
@@ -177,10 +216,14 @@ class saveUIImageOperation: Operation {
     }
     
     override func main(){
+        if isCancelled {
+            return
+        }
         if let convertedUIImage = uiImageFromCiImage(inputCiImage) {
             if saveImage(image:convertedUIImage, name:self.fileName){
                 print("saved converted image")
             }
         }
+        print("SaveUIImageOperation: ")
     }
 }
