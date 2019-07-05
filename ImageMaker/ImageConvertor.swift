@@ -66,12 +66,6 @@ func rotateImageLeft(ciImage: CIImage)->CIImage?{
 
 
 //============== LOAD AND USE IMAGE ===============================================================
-func getCIImageFromURL(_ imageUrl: URL) throws -> CIImage {
-    guard let ciImageFromURL = CIImage(contentsOf: imageUrl) else {
-        throw convertImageError.invalidImageData
-    }
-    return ciImageFromURL
-}
 
 
 func uiImageFromCiImage(_ ciImage:CIImage?) -> UIImage? {
@@ -128,6 +122,7 @@ func resaveForRightOrientationImageFrom(url: URL, toFile name: String) -> Bool {
         print("chekImageOnOrientationAndReturnFrom can't create URL")
         return false
     }
+       
 }
 
 
@@ -153,7 +148,34 @@ func loadImage(imageUrl:URL, size:CGSize, scale:CGFloat = 2.0) throws -> UIImage
     return UIImage(cgImage: downSampledImage)
 }
 
+func getCiImgFromURLandFixOrientation(url: URL) -> CIImage? {
+    let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
+    guard let imageSource = CGImageSourceCreateWithURL(url as CFURL, imageSourceOptions) else {
+        //throw convertImageError.invalidImageData
+        return nil
+    }
+    
+    let downSampleOptions = [kCGImageSourceCreateThumbnailFromImageAlways: true,
+                             kCGImageSourceCreateThumbnailWithTransform: true,] as CFDictionary
+    
+    guard let downSampledImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, downSampleOptions) else {
+        print("chekImageOnOrientationAndReturnFrom Can't create image with new orientation")
+        return nil
+    }
+    
+    return CIImage(cgImage: downSampledImage)
+}
+
+
 //==================== not used in APP ==============================================
+/*
+func getCIImageFromURL(_ imageUrl: URL) throws -> CIImage {
+    guard let ciImageFromURL = CIImage(contentsOf: imageUrl) else {
+        throw convertImageError.invalidImageData
+    }
+    return ciImageFromURL
+}
+*/
 /*
  
  func convertImageFromURL(imageUrl: URL, effect: String) throws -> UIImage? {
