@@ -31,10 +31,12 @@ class ResultImageObj: NSObject {
     //create new imgObj from Image if Image = nil create an empty Obj
     init?(_ inputImageURL:URL, delegate:ResultImageObjDelegate?){
         self.delegate = delegate
+        convertOperationsQueue.maxConcurrentOperationCount = 1
 
         do {
             self.imageName = "ImageMaker_" + ProcessInfo().globallyUniqueString + ".jpg" //create unic name for saved image
-            inputCiImage = try getCIImageFromURL(inputImageURL)
+            //inputCiImage = try getCIImageFromURL(inputImageURL)
+            //inputCiImage = try getCIImageFromURL(inputImageURL)
             if copyDataToFile(at: inputImageURL, fileName: self.imageName){
                 print("InputData saved")
             }
@@ -52,23 +54,24 @@ class ResultImageObj: NSObject {
     
     //create new obj from saved file
     init?(name:String, delegate:ResultImageObjDelegate?, notCompleatedEffect: String?){
-        
+        convertOperationsQueue.maxConcurrentOperationCount = 1
         do {
-            _ = try getCIImageFromURL(urlForFileNamed(name)) //if thw file is readable as image
+            let url = try urlForFileNamed(name)
+            guard CIImage(contentsOf: url) != nil else {
+                print("init with get ciImage from url error: ")
+                return nil
+            }
             self.imageName = name
             self.delegate = delegate
             self.processingDoneInPercent = 1.00
-             super.init()
-            if notCompleatedEffect != nil {
-                //if load obj with not compleated effect - start convertion
-                self.applyImgConvertionWith(notCompleatedEffect!)
-            }
+            super.init()
+            
+        
         }
         catch {
-            print("init with string error: ", error)
+            print("init with create url from string error: ", error)
             return nil
         }
-
     }
     
     func applyImgConvertionWith(_ effect: String){
@@ -137,12 +140,15 @@ class GetCIImageOperation: Operation, passCiImage{
             return
         }
         
+        
         do {
-            outCiImage = try getCIImageFromURL(urlForFileNamed(self.imageName))
+            //outCiImage = try getCIImageFromURL(urlForFileNamed(self.imageName))
+            outCiImage = try getCiImgFromURLandFixOrientation(url: urlForFileNamed(self.imageName))
         }
         catch {
             print("getCIImageFromURL error: ", error)
         }
+        
         print("GetCIImageOperation")
     }
 }
