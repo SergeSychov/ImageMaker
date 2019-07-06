@@ -32,19 +32,22 @@ class ResultImageObj: NSObject {
     init?(_ inputImageURL:URL, delegate:ResultImageObjDelegate?){
         self.delegate = delegate
         convertOperationsQueue.maxConcurrentOperationCount = 1
+        convertOperationsQueue.isSuspended = true
 
         do {
             self.imageName = "ImageMaker_" + ProcessInfo().globallyUniqueString + ".jpg" //create unic name for saved image
             //inputCiImage = try getCIImageFromURL(inputImageURL)
-            //inputCiImage = try getCIImageFromURL(inputImageURL)
-            if copyDataToFile(at: inputImageURL, fileName: self.imageName){
-                print("InputData saved")
-            }
-            /*
-            let inputData = try NSData(contentsOf: inputImageURL) as NSData
-            if saveImageData(data: inputData, imageName: self.imageName) != nil {
-                print("InputData saved")
-            }*/
+            //firs time loaded for object - need to fix orientation
+            let getCiAndFixOrientationFromUrlOperation = GetCiImgFromURLandFixOrientationOperation(inputImageURL)
+            getCiAndFixOrientationFromUrlOperation.name = "Get from url"
+            convertOperationsQueue.addOperation(getCiAndFixOrientationFromUrlOperation)
+            
+            let saveOperationToUrlwithName = SaveUIImageOperation(self.imageName, nil)
+            saveOperationToUrlwithName.addDependency(getCiAndFixOrientationFromUrlOperation)
+            saveOperationToUrlwithName.name = "First SaveOperation"
+            convertOperationsQueue.addOperation(saveOperationToUrlwithName)
+            
+            
             super.init()
         } catch {
             print("init with image error: ", error)
@@ -65,8 +68,6 @@ class ResultImageObj: NSObject {
             self.delegate = delegate
             self.processingDoneInPercent = 1.00
             super.init()
-            
-        
         }
         catch {
             print("init with create url from string error: ", error)
@@ -78,15 +79,36 @@ class ResultImageObj: NSObject {
         self.processingDoneInPercent = 0.00 //start convertation
         self.currentConvertionEffect = effect
         
-        let getCiImageOperation = GetCIImageOperation(self.imageName)
-        convertOperationsQueue.addOperation(getCiImageOperation)
+        //define operation for next dependencies
+        var operationAsDependenci:Operation?
+        //1. get current operation array
+        let operations = convertOperationsQueue.operations
+        if operations.count > 0 {
+            //get last but not "SaveOperation"
+            var index = operations.count - 1
+            //while (index > 0){
+               // if !operations[index].isFinished && !operations[index].isCancelled{
+                    operationAsDependenci = operations[index]
+                  //  break
+              //  }
+            //}
+        }
+        
+        if operationAsDependenci == nil {
+            let getCiImageOperation = GetCIImageOperation(self.imageName)
+            getCiImageOperation.name = "Get from name"
+            convertOperationsQueue.addOperation(getCiImageOperation)
+            operationAsDependenci = getCiImageOperation
+        }
         
         let convertOperation = ConvertOperation( effect, nil)
-        convertOperation.addDependency(getCiImageOperation)
+        convertOperation.addDependency(operationAsDependenci!)
+        convertOperation.name = "Convert"
         convertOperationsQueue.addOperation(convertOperation)
 
         let saveOperation = SaveUIImageOperation(self.imageName, nil)
         saveOperation.addDependency(convertOperation)
+        saveOperation.name = "Next Save"
         saveOperation.completionBlock = {
             DispatchQueue.main.async{
                 self.inputCiImage = nil
@@ -122,14 +144,58 @@ class ResultImageObj: NSObject {
 
 protocol passCiImage {
     var ciImage:CIImage? {get}
+    var loadString:String? {get}
 }
 
-class GetCIImageOperation: Operation, passCiImage{
-
-    let imageName: String
+class GetCiImgFromURLandFixOrientationOperation:Operation, passCiImage{ //need for right orientation
+    let inputImgUrl:URL
     var outCiImage:CIImage?
     //passing protocol
     var ciImage: CIImage? {return outCiImage}
+    var loadString: String? {return "Load"}
+    
+    init(_ url:URL){
+        self.inputImgUrl = url
+    }
+    
+    override func main(){
+        if isCancelled {
+            return
+        }
+        outCiImage = getCiImgFromURLandFixOrientation(url: inputImgUrl)
+        print("GetCiImgFromURLandFixOrientationOperation")
+    }
+}
+
+class GetCIImageOperation: Operation, passCiImage{
+    let imageName: String
+    var outCiImage:CIImage?
+    
+    //passing protocol
+    var ciImage: CIImage? {return outCiImage}
+
+    var loadString: String? {return outString}
+    
+    var inputCiImage:CIImage? {
+        var image: CIImage?
+        if let depedencie = dependencies
+            .filter({$0 is passCiImage})
+            .first as? passCiImage {
+            image = depedencie.ciImage
+        }
+        return image
+    }
+    
+    var outString:String?
+    var inString:String {
+        var string = "None"
+        if let depedencie = dependencies
+            .filter({$0 is passCiImage})
+            .first as? passCiImage {
+            string = depedencie.loadString!
+        }
+        return string
+    }
     
     init(_ imageName:String){
         self.imageName = imageName
@@ -140,40 +206,49 @@ class GetCIImageOperation: Operation, passCiImage{
             return
         }
         
-        
         do {
-            //outCiImage = try getCIImageFromURL(urlForFileNamed(self.imageName))
-            outCiImage = try getCiImgFromURLandFixOrientation(url: urlForFileNamed(self.imageName))
+            outCiImage = try CIImage(contentsOf: urlForFileNamed(self.imageName))
+            outString = inString + " + Getted"
+            print(outString as Any)
+            
         }
         catch {
             print("getCIImageFromURL error: ", error)
         }
-        
-        print("GetCIImageOperation")
     }
 }
 
 class ConvertOperation: Operation, passCiImage{
     
     private let _inputCiImage:CIImage?
-    //let imageName: String
     let effect: String
     var outCiImage:CIImage?
-    //var convertionError:Error?
-    
+
     //passing protocol
     var ciImage: CIImage? {return outCiImage}
+    var loadString: String? {return outString}
     
     var inputCiImage:CIImage? {
         var image: CIImage?
-        if let inputCiImage = self._inputCiImage {
-            image = inputCiImage
+        if self._inputCiImage != nil {
+            image = self.inputCiImage
         } else if let depedencie = dependencies
             .filter({$0 is passCiImage})
             .first as? passCiImage {
             image = depedencie.ciImage
         }
         return image
+    }
+    
+    var outString:String?
+    var inString:String {
+        var string = "None"
+        if let depedencie = dependencies
+            .filter({$0 is passCiImage})
+            .first as? passCiImage {
+            string = depedencie.loadString!
+        }
+        return string
     }
     
     init( _ effect:String, _ inputCiImage:CIImage?){
@@ -192,28 +267,42 @@ class ConvertOperation: Operation, passCiImage{
             if self.inputCiImage != nil {
                 outCiImage = try convertCIImage(ciImage: self.inputCiImage!, with: effect)
             }
+            outString = inString + " + Converted"
+            print(outString as Any)
         }
         catch {
             print("Convertion error:", error)
         }
-        print("ConvertOperation: ", effect)
     }
 }
 
-class SaveUIImageOperation: Operation {
+class SaveUIImageOperation: Operation, passCiImage{
     let fileName:String
     private let _inputCiImage:CIImage?
+    var outCiImage:CIImage?
+    
+    var ciImage: CIImage? {return outCiImage}
+    var loadString: String? {return outString}
     
     var inputCiImage:CIImage? {
         var image: CIImage?
-        if let inputCiImage = self._inputCiImage {
-            image = inputCiImage
-        } else if let depedencie = dependencies
+        if let depedencie = dependencies
             .filter({$0 is passCiImage})
             .first as? passCiImage {
                 image = depedencie.ciImage
         }
         return image
+    }
+    
+    var outString:String?
+    var inString:String {
+        var string = "None"
+        if let depedencie = dependencies
+            .filter({$0 is passCiImage})
+            .first as? passCiImage {
+            string = depedencie.loadString!
+        }
+        return string
     }
     
     init(_ fileName:String, _ inputCiImage:CIImage?){
@@ -227,9 +316,10 @@ class SaveUIImageOperation: Operation {
         }
         if let convertedUIImage = uiImageFromCiImage(inputCiImage) {
             if saveImage(image:convertedUIImage, name:self.fileName){
-                print("saved converted image")
             }
         }
-        print("SaveUIImageOperation: ")
+        outCiImage = inputCiImage
+        outString = inString + " + Saved"
+        print(outString as Any)
     }
 }
