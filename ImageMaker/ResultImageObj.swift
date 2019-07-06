@@ -32,18 +32,17 @@ class ResultImageObj: NSObject {
     init?(_ inputImageURL:URL, delegate:ResultImageObjDelegate?){
         self.delegate = delegate
         convertOperationsQueue.maxConcurrentOperationCount = 1
-        convertOperationsQueue.isSuspended = true
-
         self.imageName = "ImageMaker_" + ProcessInfo().globallyUniqueString + ".jpg" //create unic name for saved image
+
+        super.init()
+
         let getCiAndFixOrientationFromUrlOperation = GetCiImgFromURLandFixOrientationOperation(inputImageURL)
         convertOperationsQueue.addOperation(getCiAndFixOrientationFromUrlOperation)
             
         let saveOperationToUrlwithName = SaveUIImageOperation(self.imageName, nil)
         saveOperationToUrlwithName.addDependency(getCiAndFixOrientationFromUrlOperation)
             convertOperationsQueue.addOperation(saveOperationToUrlwithName)
-            
-            
-            super.init()
+        print(convertOperationsQueue.operationCount)
     }
     
     //create new obj from saved file
