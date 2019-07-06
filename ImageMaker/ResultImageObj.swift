@@ -248,10 +248,19 @@ class SaveUIImageOperation: Operation, passCiImage{
         if isCancelled {
             return
         }
+        
+        
+        if inputCiImage != nil {
+            if saveCIImageToFileWithName(inputCiImage!, fileName){
+                print("New image saved")
+            }
+        }
+
+        /*
         if let convertedUIImage = uiImageFromCiImage(inputCiImage) {
             if saveImage(image:convertedUIImage, name:self.fileName){
             }
-        }
+        }*/
         outCiImage = inputCiImage
     }
 }
