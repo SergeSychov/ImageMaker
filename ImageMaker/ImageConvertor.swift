@@ -166,6 +166,17 @@ func getCiImgFromURLandFixOrientation(url: URL) -> CIImage? {
     return CIImage(cgImage: downSampledImage)
 }
 
+func saveCIImageToFileWithName(_ ciImage:CIImage, _ name:String) -> Bool {
+
+    let cgImage = CIContext().createCGImage(ciImage, from: (ciImage.extent))
+        
+    if cgImage == nil {
+        return saveImage(image: UIImage(ciImage: ciImage), name: name)   //return input image as result, can not convert
+    } else {
+        return saveImage(image: UIImage(cgImage: cgImage!), name: name)
+    }
+
+}
 
 //==================== not used in APP ==============================================
 /*
