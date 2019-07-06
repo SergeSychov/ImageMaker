@@ -72,21 +72,6 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             //2. set input ImageView
             inputImageView.image = try loadImage(imageUrl: imageURL, size: inputImageView.bounds.size)
             inputImageUrl  = imageURL
-
-            DispatchQueue.global(qos: .default).async { //save data from url to app directory
-                let successCopy = resaveForRightOrientationImageFrom(url: imageURL, toFile: inputImageName)
-                DispatchQueue.main.async {
-                    if successCopy { //if data copied successfuly
-                        do {  //try to get URL for saved file
-                            let savedImageUrl = try urlForFileNamed(inputImageName)
-                            self.inputImageUrl = savedImageUrl //set as input image URL
-                        } catch {
-                            print("userDidChoosedNewImg can't get saved URL:", error)
-                        }
-                        
-                    }
-                }
-            }
             
             //3. clear result Image view - use this value as flag of setted new image
             resultImageView.image = nil //as flag for creating new cell at convertion action
@@ -240,7 +225,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     }
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if (resImgObjStorage.count>0){
-            print("Numbers of rows: ",resImgObjStorage.count)
+            //print("Numbers of rows: ",resImgObjStorage.count)
             return resImgObjStorage.count
         } else {
             return 0
@@ -361,6 +346,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     
     func getMainViewsPropertiesAndSetViews (){
         //chek input image
+        
         if let inputUrl = getUrlForExistingFile(inputImageName){
             self.inputImageUrl = inputUrl
             
