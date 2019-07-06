@@ -116,11 +116,15 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         } else {
             if let indexObj =  resImgObjStorage.firstIndex(of: resultImageObj) as Int?{
                 if (indexObj == 0){ //if this resultObj is last in storage
+                    if let image = loadImage(imageName: resultImageObj.imageName, size: resultImageView.bounds.size){
+                        resultImageView.image = image
+                    }
+                    /*
                     do {
                         resultImageView.image = try resultImageObj.getUIImage(forSize: resultImageView.bounds.size)
                     } catch {
                         print("changedImgResultObj", error)
-                    }
+                    }*/
                 }
                 resuableImageStorageCache.removeObject(forKey: resultImageObj.imageName as NSString)//for renew image in Cache in collection delegate calling
                 collectionOfResultImg.reloadItems(at:[IndexPath(row: indexObj, section: 0)])
@@ -244,15 +248,11 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             } else {
                 let size = imgView.bounds.size
                 DispatchQueue.global(qos: .userInitiated).async {
-                    do {
-                        let image = try resultObj.getUIImage(forSize: size)
-                        
+                    if let image =  loadImage(imageName: resultObj.imageName, size: size){
                         DispatchQueue.main.async {
                             self.resuableImageStorageCache.setObject(image, forKey: resultObj.imageName as NSString)
                             self.collectionOfResultImg.reloadItems(at: [indexPath])
                         }
-                    } catch {
-                        print(indexPath.row, "cellForItemAt can't load image for cell:", error)
                     }
                 }
             }
@@ -276,13 +276,12 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             let resultObj = self.resImgObjStorage[indexPath.row]
             if  self.resuableImageStorageCache.object(forKey: NSString(string: resultObj.imageName)) == nil{
                 DispatchQueue.global(qos: .userInitiated).async {
-                    do {
-                        let image = try resultObj.getUIImage(forSize: CGSize(width: side, height: side))
+
+                    if let image =  loadImage(imageName: resultObj.imageName, size: CGSize(width: side, height: side)){
+                        //let image = try resultObj.getUIImage(forSize: CGSize(width: side, height: side))
                         DispatchQueue.main.async {
                             self.resuableImageStorageCache.setObject(image, forKey:resultObj.imageName as NSString)
                         }
-                    } catch {
-                        print(indexPath.row, "cellForItemAt can't load image for cell:", error)
                     }
                 }
             }

@@ -111,15 +111,6 @@ class ResultImageObj: NSObject {
         }
     }
     
-    func getUIImage(forSize size:CGSize) throws -> UIImage{
-        do {
-            let imageDataFileURL = try urlForFileNamed(self.imageName)
-            return try loadImage(imageUrl: imageDataFileURL, size: size)
-        } catch {
-            print("Error getUIImage get URL:", error)
-            throw error
-        }
-    }
 }
 
 protocol passCiImage {
@@ -264,3 +255,13 @@ class SaveUIImageOperation: Operation, passCiImage{
         outCiImage = inputCiImage
     }
 }
+/*
+ func getUIImage(forSize size:CGSize) throws -> UIImage{
+ do {
+ let imageDataFileURL = try urlForFileNamed(self.imageName)
+ return try loadImage(imageUrl: imageDataFileURL, size: size)
+ } catch {
+ print("Error getUIImage get URL:", error)
+ throw error
+ }
+ }*/

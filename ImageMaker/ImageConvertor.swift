@@ -125,6 +125,18 @@ func resaveForRightOrientationImageFrom(url: URL, toFile name: String) -> Bool {
        
 }
 
+func loadImage(imageName:String, size:CGSize, scale:CGFloat = 2.0) -> UIImage? {
+    do {
+        let imageDataFileURL = try urlForFileNamed(imageName)
+        let image = try loadImage(imageUrl: imageDataFileURL, size: size, scale: scale)
+        return image
+    }
+    catch {
+        print("error image loading:", error)
+        return nil
+    }
+}
+
 
 func loadImage(imageUrl:URL, size:CGSize, scale:CGFloat = 2.0) throws -> UIImage {
     

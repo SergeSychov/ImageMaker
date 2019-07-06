@@ -97,6 +97,28 @@ func getStoredResObjNames(name:String) -> [String]{
     }
 }
 
+func setResObjFromStoredName(name:String, delegate:ResultImageObjDelegate ) -> ResultImageObj? {
+    var effectStr:String?
+    var imageName = name
+    
+    if let effectRange = name.range(of: "_effect_"){
+        //if there is effect string - convertion didn't compleated, set parameters and start convertion
+        imageName = String(imageName[..<effectRange.lowerBound])
+        effectStr = String(imageName[effectRange.upperBound...])
+    }
+    
+    if let resObj = ResultImageObj(name: imageName, delegate: delegate, notCompleatedEffect: effectStr) {
+        return resObj
+    } else {
+        DispatchQueue.global(qos: .background).async {
+            if removeFile(named: imageName) {
+                print("not aded to array and removed from disc")
+            }
+        }
+        return nil
+    }
+}
+
 
 func getSavedResultStorageWithName(name: String, delegate: ResultImageObjDelegate) -> [ResultImageObj] {
 
@@ -104,25 +126,8 @@ func getSavedResultStorageWithName(name: String, delegate: ResultImageObjDelegat
         
     var resultObjsStorage = [ResultImageObj]()
     for item in namesArray {
-        var imageName = item
-        var effectStr:String?
-            
-        if let effectRange = item.range(of: "_effect_"){
-            //if there is effect string - convertion didn't compleated, set parameters and start convertion
-            imageName = String(item[..<effectRange.lowerBound])
-            effectStr = String(item[effectRange.upperBound...])
-        }
-            
-        let resObj = ResultImageObj(name: imageName, delegate: delegate, notCompleatedEffect: effectStr)
-        if resObj != nil {
-            resultObjsStorage.append(resObj!)
-        } else {
-            //remove from app dir not necessary file in background
-            DispatchQueue.global(qos: .background).async {
-                if removeFile(named: imageName) {
-                    print("not aded to array and removed from disc")
-                }
-            }
+        if let resObj = setResObjFromStoredName(name:item, delegate:delegate) {
+            resultObjsStorage.append(resObj)
         }
     }
     return resultObjsStorage
@@ -193,14 +198,6 @@ func saveImage(image:UIImage, name:String) -> Bool {
     }
 }
 
-func getSavedImage(named: String) -> UIImage? {
-    
-    if let dir = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false) {
-        return UIImage(contentsOfFile: URL(fileURLWithPath: dir.absoluteString).appendingPathComponent(named).path)
-    }
-    return nil
-}
-
 func copyDataToFile(at:URL, fileName: String) -> Bool{ //not important process
     
     do {
@@ -252,10 +249,14 @@ func removeFile(named: String) -> Bool {
 }
 
 //=======================NOT USES IN APP ================================
-
 /*
-
-*/
+func getSavedImage(named: String) -> UIImage? {
+    
+    if let dir = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false) {
+        return UIImage(contentsOfFile: URL(fileURLWithPath: dir.absoluteString).appendingPathComponent(named).path)
+    }
+    return nil
+}*/
 
 /*
 func getSavedResultStorageFromURL (url: URL, delegate: ResultImageObjDelegate) -> [ResultImageObj]? {
