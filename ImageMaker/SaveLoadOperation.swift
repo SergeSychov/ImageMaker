@@ -82,46 +82,50 @@ func saveArray(resultObjsStorage: [ResultImageObj], name:String) -> Bool{
 }
 
 
-
-func getSavedResultStorageWithName(name: String, delegate: ResultImageObjDelegate) -> [ResultImageObj] {
-    
+func getStoredResObjNames(name:String) -> [String]{
     do {
         let fileURL = try urlForFileNamed(name)
         guard let namesArray = NSKeyedUnarchiver.unarchiveObject(withFile: fileURL.path) as? [String] else {
             print("getSavedResultStorageWithName no archive in file")
-            return [ResultImageObj]()
-            
+            return [String]()
         }
-        var resultObjsStorage = [ResultImageObj]()
-        for item in namesArray {
-            var imageName = item
-            var effectStr:String?
+        return namesArray
+    }
+    catch {
+        print("Get URL from name error:", error)
+        return [String]()
+    }
+}
+
+
+func getSavedResultStorageWithName(name: String, delegate: ResultImageObjDelegate) -> [ResultImageObj] {
+
+    let namesArray = getStoredResObjNames(name: name)
+        
+    var resultObjsStorage = [ResultImageObj]()
+    for item in namesArray {
+        var imageName = item
+        var effectStr:String?
             
-            if let effectRange = item.range(of: "_effect_"){
-                //if there is effect string - convertion didn't compleated, set parameters and start convertion
-                imageName = String(item[..<effectRange.lowerBound])
-                effectStr = String(item[effectRange.upperBound...])
-            }
+        if let effectRange = item.range(of: "_effect_"){
+            //if there is effect string - convertion didn't compleated, set parameters and start convertion
+            imageName = String(item[..<effectRange.lowerBound])
+            effectStr = String(item[effectRange.upperBound...])
+        }
             
-            let resObj = ResultImageObj(name: imageName, delegate: delegate, notCompleatedEffect: effectStr)
-            if resObj != nil {
-                resultObjsStorage.append(resObj!)
-            } else {
-                //remove from app dir not necessary file in background
-                DispatchQueue.global(qos: .background).async {
-                    if removeFile(named: imageName) {
-                        print("not aded to array and removed from disc")
-                    }
+        let resObj = ResultImageObj(name: imageName, delegate: delegate, notCompleatedEffect: effectStr)
+        if resObj != nil {
+            resultObjsStorage.append(resObj!)
+        } else {
+            //remove from app dir not necessary file in background
+            DispatchQueue.global(qos: .background).async {
+                if removeFile(named: imageName) {
+                    print("not aded to array and removed from disc")
                 }
             }
         }
-        return resultObjsStorage
-        
-    } catch {
-        print("getSavedResultStorageWithName can't get URL for name:", error)
-        return [ResultImageObj]()
     }
-
+    return resultObjsStorage
 }
 
 func clearStorage(resultObjsStorage: [ResultImageObj])-> Bool{
@@ -134,6 +138,7 @@ func clearStorage(resultObjsStorage: [ResultImageObj])-> Bool{
     }
     return success
 }
+
 
 func saveImageData(data: NSData, imageName: String) -> URL? {
     guard let directory = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false) as NSURL else {
@@ -188,27 +193,6 @@ func saveImage(image:UIImage, name:String) -> Bool {
     }
 }
 
-func removeFile(named: String) -> Bool {
-    guard let directory = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false) as NSURL else {
-        return false
-    }
-    
-    //Checks if file exists, remove it
-    if FileManager.default.fileExists(atPath: directory.appendingPathComponent(named)!.path) {
-        do {
-            //remove old img
-            try FileManager.default.removeItem(atPath: directory.appendingPathComponent(named)!.path)
-            print("success deleting file")
-            return true
-        } catch let removeError {
-            print("not remove img", removeError)
-            return false
-        }
-    } else {
-        return false
-    }
-}
-
 func getSavedImage(named: String) -> UIImage? {
     
     if let dir = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false) {
@@ -216,9 +200,7 @@ func getSavedImage(named: String) -> UIImage? {
     }
     return nil
 }
-//=======================NOT USES IN APP ================================
 
-/*
 func copyDataToFile(at:URL, fileName: String) -> Bool{ //not important process
     
     do {
@@ -246,6 +228,33 @@ func copyDataToFile(at:URL, fileName: String) -> Bool{ //not important process
         return false
     }
 }
+
+
+func removeFile(named: String) -> Bool {
+    guard let directory = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false) as NSURL else {
+        return false
+    }
+    
+    //Checks if file exists, remove it
+    if FileManager.default.fileExists(atPath: directory.appendingPathComponent(named)!.path) {
+        do {
+            //remove old img
+            try FileManager.default.removeItem(atPath: directory.appendingPathComponent(named)!.path)
+            print("success deleting file")
+            return true
+        } catch let removeError {
+            print("not remove img", removeError)
+            return false
+        }
+    } else {
+        return false
+    }
+}
+
+//=======================NOT USES IN APP ================================
+
+/*
+
 */
 
 /*
