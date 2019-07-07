@@ -39,7 +39,38 @@ func getUrlForExistingFile(_ name:String)-> URL? {
         return nil
     }
 }
+func saveArray(resultObjsNames: [String], name:String) -> Bool{
+    
+    do {
+        let fileURL = try urlForFileNamed(name)
+        
+        //Checks if file exists, remove it
+        if FileManager.default.fileExists(atPath: fileURL.path) {
+            do {
+                //remove old img
+                try FileManager.default.removeItem(atPath: fileURL.path)
+            } catch let removeError {
+                print("not remove old obj arrays", removeError)
+                return false
+            }
+        }
+        
+        do {
+            try NSKeyedArchiver.archivedData(withRootObject: resultObjsNames).write(to: fileURL)
+            print("Array saved succesufully")
+            return true
+            
+        } catch let saveError {
+            print("not save array", saveError)
+            return false
+        }
+    } catch {
+        print("saveArray can't get URL for name:", error)
+        return false
+    }
+}
 
+/*
 func saveArray(resultObjsStorage: [ResultImageObj], name:String) -> Bool{
 
     do {
@@ -79,7 +110,7 @@ func saveArray(resultObjsStorage: [ResultImageObj], name:String) -> Bool{
         print("saveArray can't get URL for name:", error)
         return false
     }
-}
+}*/
 
 
 func getStoredResObjNames(name:String) -> [String]{
