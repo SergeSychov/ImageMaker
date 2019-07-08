@@ -10,10 +10,20 @@ import UIKit
 
 protocol ResultImageObjDelegate: class {
     //completedPart - percent of spent time according wholedelay interval
-    func changedImgResultObj(resultImageObj:ResultImageObj, error:Error?)
+    func changedImgResultObj(resultImageObjName:String, error:Error?, percentageOfCompletion: Double)
+    
 }
 
-class ResultImageObj: NSObject {
+
+protocol passCiImage {
+    var ciImage:CIImage? {get}
+}
+
+protocol passDataReady {
+    func percentageOfCompletion(_ percentage: Double)
+}
+
+class ResultImageObj: NSObject, passDataReady{
     
     //private var resultImg: UIImage?
     var imageName:String
@@ -29,9 +39,9 @@ class ResultImageObj: NSObject {
     let convertOperationsQueue = OperationQueue()
 
     //create new imgObj from Image if Image = nil create an empty Obj
-    init?(_ inputImageURL:URL, delegate:ResultImageObjDelegate?){
+    init?(_ inputImageURL:URL, delegate:ResultImageObjDelegate?){ //not RETURN NIL!!!! CHECK
         self.delegate = delegate
-        convertOperationsQueue.maxConcurrentOperationCount = 1
+        convertOperationsQueue.maxConcurrentOperationCount = 2
         self.imageName = "ImageMaker_" + ProcessInfo().globallyUniqueString + ".jpg" //create unic name for saved image
 
         super.init()
@@ -85,6 +95,7 @@ class ResultImageObj: NSObject {
         
         let convertOperation = ConvertOperation( effect, nil)
         convertOperation.addDependency(operationAsDependenci!)
+        convertOperation.delegateToCatchExecuting = self
         convertOperationsQueue.addOperation(convertOperation)
 
         let saveOperation = SaveUIImageOperation(self.imageName, nil)
@@ -95,13 +106,22 @@ class ResultImageObj: NSObject {
                 self.processingDoneInPercent = 1.00
                 self.currentConvertionEffect = nil
                 if self.delegate != nil {
-                    self.delegate!.changedImgResultObj(resultImageObj: self, error: nil)
+                    self.delegate!.changedImgResultObj(resultImageObjName:self.imageName, error: nil, percentageOfCompletion: 1.00)
                 }
             }
         }
         convertOperationsQueue.addOperation(saveOperation)
     }
+    
+    
+    //pass date delegate
+    func percentageOfCompletion(_ percentage: Double) {
+        if self.delegate != nil {
+            self.delegate!.changedImgResultObj(resultImageObjName:self.imageName, error: nil, percentageOfCompletion: percentage)
+        }
+    }
 
+    /*
     func getURLOfImageFile() throws -> URL{
         do {
             return try urlForFileNamed(self.imageName)
@@ -109,13 +129,10 @@ class ResultImageObj: NSObject {
             print("getURLOfImageFile get URL:", error)
             throw error
         }
-    }
+    } */
     
 }
 
-protocol passCiImage {
-    var ciImage:CIImage? {get}
-}
 
 class GetCiImgFromURLandFixOrientationOperation:Operation, passCiImage{ //need for right orientation
     let inputImgUrl:URL
@@ -175,6 +192,10 @@ class ConvertOperation: Operation, passCiImage{
     private let _inputCiImage:CIImage?
     let effect: String
     var outCiImage:CIImage?
+    
+    let timeToExecute:TimeInterval
+    var startDate:Date
+    var delegateToCatchExecuting:passDataReady?
 
     //passing protocol
     var ciImage: CIImage? {return outCiImage}
@@ -190,9 +211,16 @@ class ConvertOperation: Operation, passCiImage{
         return image
     }
 
-    init( _ effect:String, _ inputCiImage:CIImage?){
+    init( _ effect:String, _ inputCiImage:CIImage?, _ timeIntervalToDelay:TimeInterval = 1.00){
         self.effect = effect
         self._inputCiImage = inputCiImage
+        self.timeToExecute = timeIntervalToDelay
+        self.startDate = Date()
+    }
+    
+    override func start() {
+        self.startDate = Date()
+        super.start()
     }
     
     override func main(){
@@ -201,9 +229,25 @@ class ConvertOperation: Operation, passCiImage{
         }
         
         do {
+            let convertedImg:CIImage?
             if self.inputCiImage != nil {
-                outCiImage = try convertCIImage(ciImage: self.inputCiImage!, with: effect)
+                convertedImg = try convertCIImage(ciImage: self.inputCiImage!, with: effect)
+            } else {
+                convertedImg = nil
             }
+            //var counter = 0
+            while Date(timeInterval: timeToExecute, since: startDate) > Date() {
+                Thread.sleep(forTimeInterval: 0.04) //25 frames per second
+                DispatchQueue.main.async {
+                    if self.delegateToCatchExecuting != nil {
+                        self.delegateToCatchExecuting?.percentageOfCompletion( (self.startDate.timeIntervalSinceNow/self.timeToExecute) * (-1))
+                    }
+                }
+               // print("sleep: ", counter)
+               // counter += 1
+            }
+            outCiImage = convertedImg
+            
         }
         catch {
             print("Convertion error:", error)
