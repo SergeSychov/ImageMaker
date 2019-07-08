@@ -69,6 +69,13 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             //2. set input ImageView
             inputImageView.image = try loadImage(imageUrl: imageURL, size: inputImageView.bounds.size)
             inputImageUrl  = imageURL
+            DispatchQueue.global(qos: .default).async {
+                if copyDataToFile(at: imageURL, fileName: inputImageName){
+                    DispatchQueue.main.async {
+                        print("Input image saved to app storage")
+                    }
+                }
+            }
             
             //3. clear result Image view - use this value as flag of setted new image
             resultImageView.image = nil //as flag for creating new cell at convertion action
@@ -107,19 +114,24 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     }
     
         //imageResultObj DELEGATE
-    func changedImgResultObj(resultImageObjName: String, error: Error?) {
+    func changedImgResultObj(resultImageObjName: String, error: Error?, percentageOfCompletion: Double) {
         print("changedImgResultObj call")
+
         if error != nil {
             print("changedImgResultObj some error occures: ", error as Any)
         } else {
             if let indexObj =  resImgObjNamesStorage.firstIndex(of: resultImageObjName) {
-                if (indexObj == 0){ //if this resultObj is last in storage
-                    if let image = loadImage(imageName:resultImageObjName, size:resultImageView.bounds.size){
-                        resultImageView.image = image
+                
+                
+                if percentageOfCompletion < 1 {
+                    if (indexObj == 0) { print("percent of executing: ", percentageOfCompletion)} //if this resultObj is last in storage
+                } else {
+                    if (indexObj == 0){ //if this resultObj is last in storage
+                        resultImageView.image = loadImage(imageName:resultImageObjName, size:resultImageView.bounds.size)
                     }
+                    resuableImageStorageCache.removeObject(forKey: resultImageObjName as NSString)//for renew image in Cache in collection delegate calling
+                    collectionOfResultImg.reloadItems(at:[IndexPath(row: indexObj, section: 0)])
                 }
-                resuableImageStorageCache.removeObject(forKey: resultImageObjName as NSString)//for renew image in Cache in collection delegate calling
-                collectionOfResultImg.reloadItems(at:[IndexPath(row: indexObj, section: 0)])
             }
         }
     }
@@ -361,6 +373,14 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         //get resultsObjsNamesArray
         if let _ = getUrlForExistingFile(storageArrayName){
             resImgObjNamesStorage = getStoredResObjNames(name: storageArrayName)
+            if (resImgObjNamesStorage.count > 0) && !isUserChoosedNewImage {
+                
+                curentResObj = ResultImageObj(name: resImgObjNamesStorage.first!, delegate: self, notCompleatedEffect: nil)
+                
+                if let image = loadImage(imageName:resImgObjNamesStorage.first!, size:resultImageView.bounds.size){
+                    resultImageView.image = image
+                }
+            }
         }
     }
     
