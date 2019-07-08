@@ -14,16 +14,15 @@ protocol ResultImageObjDelegate: class {
     
 }
 
-
-protocol passCiImage {
+protocol PassCiImage {
     var ciImage:CIImage? {get}
 }
 
-protocol passDataReady {
+protocol PassDataReady {
     func percentageOfCompletion(_ percentage: Double)
 }
 
-class ResultImageObj: NSObject, passDataReady{
+class ResultImageObj: NSObject, PassDataReady{
     
     //private var resultImg: UIImage?
     var imageName:String
@@ -37,11 +36,11 @@ class ResultImageObj: NSObject, passDataReady{
         }
     }
     let convertOperationsQueue = OperationQueue()
+    var delayOperation:DelayOperation?
 
     //create new imgObj from Image if Image = nil create an empty Obj
     init?(_ inputImageURL:URL, delegate:ResultImageObjDelegate?){ //not RETURN NIL!!!! CHECK
         self.delegate = delegate
-        convertOperationsQueue.maxConcurrentOperationCount = 2
         self.imageName = "ImageMaker_" + ProcessInfo().globallyUniqueString + ".jpg" //create unic name for saved image
 
         super.init()
@@ -57,7 +56,6 @@ class ResultImageObj: NSObject, passDataReady{
     
     //create new obj from saved file
     init?(name:String, delegate:ResultImageObjDelegate?, notCompleatedEffect: String?){
-        convertOperationsQueue.maxConcurrentOperationCount = 1
         do {
             let url = try urlForFileNamed(name)
             guard CIImage(contentsOf: url) != nil else {
@@ -87,6 +85,15 @@ class ResultImageObj: NSObject, passDataReady{
             operationAsDependenci = operations.last
         }
         
+        //add delay func //Important after define CIImage dependency
+        let delayOp = DelayOperation(1.00, self)
+        delayOp.name = "DELAY"
+        if self.delayOperation != nil {
+            delayOp.addDependency(self.delayOperation!)
+        }
+        self.delayOperation = delayOp
+        convertOperationsQueue.addOperation(delayOp)
+        
         if operationAsDependenci == nil {
             let getCiImageOperation = GetCIImageOperation(self.imageName)
             convertOperationsQueue.addOperation(getCiImageOperation)
@@ -95,11 +102,11 @@ class ResultImageObj: NSObject, passDataReady{
         
         let convertOperation = ConvertOperation( effect, nil)
         convertOperation.addDependency(operationAsDependenci!)
-        convertOperation.delegateToCatchExecuting = self
         convertOperationsQueue.addOperation(convertOperation)
 
         let saveOperation = SaveUIImageOperation(self.imageName, nil)
         saveOperation.addDependency(convertOperation)
+        saveOperation.addDependency(delayOp) //add delay time dependency
         saveOperation.completionBlock = {
             DispatchQueue.main.async{
                 self.inputCiImage = nil
@@ -134,7 +141,7 @@ class ResultImageObj: NSObject, passDataReady{
 }
 
 
-class GetCiImgFromURLandFixOrientationOperation:Operation, passCiImage{ //need for right orientation
+class GetCiImgFromURLandFixOrientationOperation:Operation, PassCiImage{ //need for right orientation
     let inputImgUrl:URL
     var outCiImage:CIImage?
     
@@ -153,7 +160,7 @@ class GetCiImgFromURLandFixOrientationOperation:Operation, passCiImage{ //need f
     }
 }
 
-class GetCIImageOperation: Operation, passCiImage{
+class GetCIImageOperation: Operation, PassCiImage{
     let imageName: String
     var outCiImage:CIImage?
     
@@ -162,8 +169,8 @@ class GetCIImageOperation: Operation, passCiImage{
     var inputCiImage:CIImage? {
         var image: CIImage?
         if let depedencie = dependencies
-            .filter({$0 is passCiImage})
-            .first as? passCiImage {
+            .filter({$0 is PassCiImage})
+            .first as? PassCiImage {
             image = depedencie.ciImage
         }
         return image
@@ -187,15 +194,11 @@ class GetCIImageOperation: Operation, passCiImage{
     }
 }
 
-class ConvertOperation: Operation, passCiImage{
+class ConvertOperation: Operation, PassCiImage{
     
     private let _inputCiImage:CIImage?
     let effect: String
     var outCiImage:CIImage?
-    
-    let timeToExecute:TimeInterval
-    var startDate:Date
-    var delegateToCatchExecuting:passDataReady?
 
     //passing protocol
     var ciImage: CIImage? {return outCiImage}
@@ -204,8 +207,8 @@ class ConvertOperation: Operation, passCiImage{
         if self._inputCiImage != nil {
             image = self.inputCiImage
         } else if let depedencie = dependencies
-            .filter({$0 is passCiImage})
-            .first as? passCiImage {
+            .filter({$0 is PassCiImage})
+            .first as? PassCiImage {
             image = depedencie.ciImage
         }
         return image
@@ -214,13 +217,6 @@ class ConvertOperation: Operation, passCiImage{
     init( _ effect:String, _ inputCiImage:CIImage?, _ timeIntervalToDelay:TimeInterval = 1.00){
         self.effect = effect
         self._inputCiImage = inputCiImage
-        self.timeToExecute = timeIntervalToDelay
-        self.startDate = Date()
-    }
-    
-    override func start() {
-        self.startDate = Date()
-        super.start()
     }
     
     override func main(){
@@ -229,25 +225,9 @@ class ConvertOperation: Operation, passCiImage{
         }
         
         do {
-            let convertedImg:CIImage?
             if self.inputCiImage != nil {
-                convertedImg = try convertCIImage(ciImage: self.inputCiImage!, with: effect)
-            } else {
-                convertedImg = nil
-            }
-            //var counter = 0
-            while Date(timeInterval: timeToExecute, since: startDate) > Date() {
-                Thread.sleep(forTimeInterval: 0.04) //25 frames per second
-                DispatchQueue.main.async {
-                    if self.delegateToCatchExecuting != nil {
-                        self.delegateToCatchExecuting?.percentageOfCompletion( (self.startDate.timeIntervalSinceNow/self.timeToExecute) * (-1))
-                    }
-                }
-               // print("sleep: ", counter)
-               // counter += 1
-            }
-            outCiImage = convertedImg
-            
+                outCiImage = try convertCIImage(ciImage: self.inputCiImage!, with: effect)
+            } 
         }
         catch {
             print("Convertion error:", error)
@@ -255,7 +235,7 @@ class ConvertOperation: Operation, passCiImage{
     }
 }
 
-class SaveUIImageOperation: Operation, passCiImage{
+class SaveUIImageOperation: Operation, PassCiImage{
     let fileName:String
     private let _inputCiImage:CIImage?
     var outCiImage:CIImage?
@@ -267,8 +247,8 @@ class SaveUIImageOperation: Operation, passCiImage{
         if self._inputCiImage != nil {
             image = self.inputCiImage
         } else if let depedencie = dependencies
-            .filter({$0 is passCiImage})
-            .first as? passCiImage {
+            .filter({$0 is PassCiImage})
+            .first as? PassCiImage {
             image = depedencie.ciImage
         }
         return image
@@ -290,14 +270,37 @@ class SaveUIImageOperation: Operation, passCiImage{
                 print("New image saved")
             }
         }
-
-        /*
-        if let convertedUIImage = uiImageFromCiImage(inputCiImage) {
-            if saveImage(image:convertedUIImage, name:self.fileName){
-            }
-        }*/
         outCiImage = inputCiImage
     }
+}
+
+class DelayOperation: Operation {
+    
+    let timeToExecute:TimeInterval
+    var startDate:Date
+    var delegateToCatchExecuting:PassDataReady?
+    
+    init(_ delayTime:TimeInterval = 1, _ delegate:PassDataReady?){
+        self.timeToExecute = delayTime
+        self.delegateToCatchExecuting = delegate
+        self.startDate = Date()
+    }
+    override func start() {
+        self.startDate = Date()
+        super.start()
+    }
+    override func main(){
+        while Date(timeInterval: timeToExecute, since: startDate) > Date() {
+            Thread.sleep(forTimeInterval: 0.04) //25 frames per second
+            DispatchQueue.main.async {
+                if self.delegateToCatchExecuting != nil {
+                    self.delegateToCatchExecuting?.percentageOfCompletion( (self.startDate.timeIntervalSinceNow/self.timeToExecute) * (-1))
+                }
+            }
+        }
+    }
+
+    
 }
 /*
  func getUIImage(forSize size:CGSize) throws -> UIImage{
