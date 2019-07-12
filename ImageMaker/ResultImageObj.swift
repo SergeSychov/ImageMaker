@@ -86,7 +86,7 @@ class ResultImageObj: NSObject, PassDataReady{
         }
         
         //add delay func //Important after define CIImage dependency
-        let delayOp = DelayOperation(1.00, self)
+        let delayOp = DelayOperation(Double.random(in: 1...5), self)
         delayOp.name = "DELAY"
         if self.delayOperation != nil {
             delayOp.addDependency(self.delayOperation!)
@@ -106,8 +106,14 @@ class ResultImageObj: NSObject, PassDataReady{
 
         let saveOperation = SaveUIImageOperation(self.imageName, nil)
         saveOperation.addDependency(convertOperation)
-        saveOperation.addDependency(delayOp) //add delay time dependency
-        saveOperation.completionBlock = {
+        convertOperationsQueue.addOperation(saveOperation)
+
+        
+        
+        let callOperation = ReadySignalOperation()
+        callOperation.addDependency(delayOp)//add delay time dependency
+        callOperation.addDependency(saveOperation)
+        callOperation.completionBlock = {
             DispatchQueue.main.async{
                 self.inputCiImage = nil
                 self.processingDoneInPercent = 1.00
@@ -117,7 +123,7 @@ class ResultImageObj: NSObject, PassDataReady{
                 }
             }
         }
-        convertOperationsQueue.addOperation(saveOperation)
+        convertOperationsQueue.addOperation(callOperation)
     }
     
     
@@ -127,16 +133,6 @@ class ResultImageObj: NSObject, PassDataReady{
             self.delegate!.changedImgResultObj(resultImageObjName:self.imageName, error: nil, percentageOfCompletion: percentage)
         }
     }
-
-    /*
-    func getURLOfImageFile() throws -> URL{
-        do {
-            return try urlForFileNamed(self.imageName)
-        } catch {
-            print("getURLOfImageFile get URL:", error)
-            throw error
-        }
-    } */
     
 }
 
@@ -274,6 +270,32 @@ class SaveUIImageOperation: Operation, PassCiImage{
     }
 }
 
+class ReadySignalOperation: Operation, PassCiImage{ //need just for delegate call after delay and saved opperation will be completed
+    private let _inputCiImage:CIImage? = nil
+    var outCiImage:CIImage?
+    
+    //passing protocol
+    var ciImage: CIImage? {return outCiImage}
+    var inputCiImage:CIImage? {
+        var image: CIImage?
+        if self._inputCiImage != nil {
+            image = self.inputCiImage
+        } else if let depedencie = dependencies
+            .filter({$0 is PassCiImage})
+            .first as? PassCiImage {
+            image = depedencie.ciImage
+        }
+        return image
+    }
+    
+    override func main(){
+        if isCancelled {
+            return
+        }
+        outCiImage = inputCiImage
+    }
+}
+
 class DelayOperation: Operation {
     
     let timeToExecute:TimeInterval
@@ -291,7 +313,7 @@ class DelayOperation: Operation {
     }
     override func main(){
         while Date(timeInterval: timeToExecute, since: startDate) > Date() {
-            Thread.sleep(forTimeInterval: 0.04) //25 frames per second
+            Thread.sleep(forTimeInterval: 0.03) //25 frames per second
             DispatchQueue.main.async {
                 if self.delegateToCatchExecuting != nil {
                     self.delegateToCatchExecuting?.percentageOfCompletion( (self.startDate.timeIntervalSinceNow/self.timeToExecute) * (-1))
