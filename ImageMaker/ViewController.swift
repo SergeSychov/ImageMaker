@@ -21,7 +21,8 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     @IBOutlet weak var inputImageView: UIImageView!
     @IBOutlet weak var resultImageView: UIImageView!
     @IBOutlet weak var collectionOfResultImg: UICollectionView!
-
+    @IBOutlet weak var indicatorView: IndicatorView!
+    
     var inputImageUrl: URL? //need only for save
     var resImgObjNamesStorage = [String]()
     var curentResObj:ResultImageObj?
@@ -47,6 +48,9 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         }
 
         getMainViewsPropertiesAndSetViews() //renew saved images
+        
+        //set initial view of indicator
+        indicatorView.alpha = 0
         
         //add observeres to save main variables
         NotificationCenter.default.addObserver(self, selector: #selector(appGoesOff), name: UIApplication.willResignActiveNotification, object: nil)
@@ -87,6 +91,8 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     }
     //convert image actions
     @IBAction func convertImageAction(_ sender: UIButton) {
+        indicatorView.readyPart = 0.00
+
         if isUserChoosedNewImage { //if it's new image
             //create new empty resultObj add it to result storage aray
             let newResObj = ResultImageObj(inputImageUrl!, delegate: self)
@@ -107,6 +113,11 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         if sender.restorationIdentifier != nil {
             if(resImgObjNamesStorage.count > 0) && (curentResObj != nil) {
                 curentResObj!.applyImgConvertionWith(sender.restorationIdentifier!)
+                
+                //show indicator view animated
+                UIView.animate(withDuration: 0.6) {
+                    self.indicatorView.alpha = 1
+                }
             }
         } else {
             print("Button without restorationIdentifier!")
@@ -122,12 +133,19 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         } else {
             if let indexObj =  resImgObjNamesStorage.firstIndex(of: resultImageObjName) {
                 
-                
-                if percentageOfCompletion < 1 {
-                    if (indexObj == 0) { print("percent of executing: ", percentageOfCompletion)} //if this resultObj is last in storage
-                } else {
+                if (indexObj == 0) {
+                    //print("percent of executing: ", percentageOfCompletion)
+                    indicatorView.readyPart = percentageOfCompletion
+                }
+                if percentageOfCompletion == 1 {
                     if (indexObj == 0){ //if this resultObj is last in storage
                         resultImageView.image = loadImage(imageName:resultImageObjName, size:resultImageView.bounds.size)
+                        indicatorView.readyPart = percentageOfCompletion
+                        
+                        //hide indicator view animated
+                        UIView.animate(withDuration: 0.6) {
+                            self.indicatorView.alpha = 0
+                        }
                     }
                     resuableImageStorageCache.removeObject(forKey: resultImageObjName as NSString)//for renew image in Cache in collection delegate calling
                     collectionOfResultImg.reloadItems(at:[IndexPath(row: indexObj, section: 0)])
