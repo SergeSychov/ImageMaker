@@ -27,7 +27,7 @@
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yz9-lt-fR1" userLabel="WorkImageContainer">
                                                 <rect key="frame" x="0.0" y="0.0" width="278" height="246"/>
                                                 <subviews>
-                                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="v5g-K4-QXv">
+                                                    <imageView contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="v5g-K4-QXv">
                                                         <rect key="frame" x="0.0" y="0.0" width="278" height="246"/>
                                                     </imageView>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4FQ-It-hgT">
@@ -155,9 +155,9 @@
                                             <constraint firstItem="yz9-lt-fR1" firstAttribute="top" secondItem="aZc-yt-mDy" secondAttribute="top" id="xd0-cH-0g5"/>
                                         </constraints>
                                     </stackView>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="F8P-MF-1LV" userLabel="Indicator">
+                                    <view contentMode="redraw" translatesAutoresizingMaskIntoConstraints="NO" id="F8P-MF-1LV" userLabel="Indicator" customClass="IndicatorView" customModule="ImageMaker" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="262" width="375" height="29"/>
-                                        <color key="backgroundColor" red="1" green="0.49327188729999999" blue="0.47399842739999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </view>
                                 </subviews>
                                 <color key="backgroundColor" red="0.40000000600000002" green="1" blue="0.40000000600000002" alpha="1" colorSpace="calibratedRGB"/>
@@ -227,7 +227,7 @@
                                                     </button>
                                                 </subviews>
                                             </stackView>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="mFc-Ns-DBA">
+                                            <imageView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="250" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mFc-Ns-DBA">
                                                 <rect key="frame" x="119" y="0.0" width="240" height="233"/>
                                             </imageView>
                                         </subviews>
@@ -300,6 +300,7 @@
                     <connections>
                         <outlet property="choosePicthureContainerView" destination="4FQ-It-hgT" id="A8J-pu-mHw"/>
                         <outlet property="collectionOfResultImg" destination="PhT-vF-1Le" id="8Yj-tl-URq"/>
+                        <outlet property="indicatorView" destination="F8P-MF-1LV" id="TyM-0w-HRu"/>
                         <outlet property="inputImageView" destination="v5g-K4-QXv" id="oIh-i0-hqr"/>
                         <outlet property="resultImageView" destination="mFc-Ns-DBA" id="p2C-BU-Xoa"/>
                     </connections>
