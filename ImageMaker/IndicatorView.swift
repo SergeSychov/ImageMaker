@@ -12,7 +12,7 @@ class IndicatorView: UIView {
     
     let indicatorColor:UIColor? = nil
     let pieces = 25
-    let indent:CGFloat  = 0.10
+    let indentFromSides:CGFloat  = 0.10
     let lineWidth:CGFloat = 1.00
     
     var readyPart = 0.00 {
@@ -26,12 +26,11 @@ class IndicatorView: UIView {
     }
     
     func setAnimation(){
-        //if animationLayer == nil {
         let animationLayerTwo = CAShapeLayer()
         animationLayerTwo.opacity = 0.00
         self.layer.addSublayer(animationLayerTwo)
 
-        animationLayerTwo.path = drawLinearPatchInRect(rct: self.bounds, sideIndetn: indent, totalPieces: pieces, donePart: readyPart).cgPath
+        animationLayerTwo.path = drawLinearPatchInRect(rct: self.bounds, sideIndetn: indentFromSides, totalPieces: pieces, donePart: readyPart).cgPath
         animationLayerTwo.fillColor = indicatorColor?.cgColor ?? UIColor.white.cgColor
         animationLayerTwo.strokeColor = indicatorColor?.cgColor ?? UIColor.white.cgColor
 
@@ -41,7 +40,6 @@ class IndicatorView: UIView {
         opacityAnimation.duration = 0.2
         
         animationLayerTwo.add(opacityAnimation, forKey: "opacity")
-        
     }
     
 
@@ -56,7 +54,7 @@ class IndicatorView: UIView {
     
     func drawInitialIndicatorWithContext(context: CGContext, rct: CGRect) {
         
-        context.addPath(drawLinearPatchInRect(rct: rct, sideIndetn: indent, totalPieces: pieces, donePart: 1.00).cgPath)
+        context.addPath(drawLinearPatchInRect(rct: rct, sideIndetn: indentFromSides, totalPieces: pieces, donePart: 1.00).cgPath)
         context.setLineWidth(lineWidth) //lineWidth
         context.setStrokeColor(indicatorColor?.cgColor ?? UIColor.white.cgColor)
         if (readyPart == 1) {
@@ -80,9 +78,18 @@ class IndicatorView: UIView {
         let intDone = Int(round(donePart * Double(totalPieces)))
         
         for item in 0...intDone {
-            let circleCenter = CGPoint(x: measure * sideIndetn + CGFloat(item) * step, y: rct.height / 2 )
-            var point1 = circleCenter
-            point1.x += radius / 2
+            var circleCenter:CGPoint
+            var point1:CGPoint
+            
+            if isHorisontal {
+                circleCenter = CGPoint(x: measure * sideIndetn + CGFloat(item) * step, y: rct.height / 2 )
+                point1 = circleCenter
+                point1.x += radius / 2
+            } else {
+                circleCenter = CGPoint(x: rct.width / 2 , y: measure * sideIndetn + CGFloat(item) * step)
+                point1 = circleCenter
+                point1.y += radius / 2
+            }
             
             patch.move(to: point1)
             patch.addArc(withCenter: circleCenter, radius: radius/2, startAngle: 0, endAngle: CGFloat(Double.pi * 2), clockwise: true)
@@ -90,7 +97,4 @@ class IndicatorView: UIView {
         
         return patch
     }
-
-    
-
 }
