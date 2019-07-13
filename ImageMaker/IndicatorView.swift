@@ -19,7 +19,11 @@ class IndicatorView: UIView {
         didSet (newValue){
             if newValue == 1 {
                 self.setNeedsDisplay()
+                hideSelfAnimated()
             } else {
+                if self.alpha == 0 {
+                    showSelfAnimated()
+                }
                 setAnimation()
             }
         }
@@ -96,5 +100,17 @@ class IndicatorView: UIView {
         }
         
         return patch
+    }
+    
+    func hideSelfAnimated(){
+        UIView.animate(withDuration: 0.6) {
+            self.alpha = 0
+        }
+    }
+    
+    func showSelfAnimated(){
+        UIView.animate(withDuration: 0.6) {
+            self.alpha = 1
+        }
     }
 }
