@@ -21,7 +21,9 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     @IBOutlet weak var inputImageView: UIImageView!
     @IBOutlet weak var resultImageView: UIImageView!
     @IBOutlet weak var collectionOfResultImg: UICollectionView!
-    @IBOutlet weak var indicatorView: IndicatorView!
+    @IBOutlet weak var loadIndicatorView: LinearIndicatorView!
+    @IBOutlet weak var progressIndicatorView: LinearIndicatorView!
+    @IBOutlet weak var progressRadialIndicatorView: RadialIndicatorView!
     
     var inputImageUrl: URL? //need only for save
     var resImgObjNamesStorage = [String]()
@@ -50,7 +52,8 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         getMainViewsPropertiesAndSetViews() //renew saved images
         
         //set initial view of indicator
-        indicatorView.alpha = 0
+        progressIndicatorView.alpha = 0
+        progressRadialIndicatorView.alpha = 0
         
         //add observeres to save main variables
         NotificationCenter.default.addObserver(self, selector: #selector(appGoesOff), name: UIApplication.willResignActiveNotification, object: nil)
@@ -91,7 +94,8 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     }
     //convert image actions
     @IBAction func convertImageAction(_ sender: UIButton) {
-        indicatorView.readyPart = 0.00
+        progressIndicatorView.readyPart = 0.00
+        progressRadialIndicatorView.readyPart = 0.00
 
         if isUserChoosedNewImage { //if it's new image
             //create new empty resultObj add it to result storage aray
@@ -113,11 +117,6 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         if sender.restorationIdentifier != nil {
             if(resImgObjNamesStorage.count > 0) && (curentResObj != nil) {
                 curentResObj!.applyImgConvertionWith(sender.restorationIdentifier!)
-                
-                //show indicator view animated
-                UIView.animate(withDuration: 0.6) {
-                    self.indicatorView.alpha = 1
-                }
             }
         } else {
             print("Button without restorationIdentifier!")
@@ -134,18 +133,19 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             if let indexObj =  resImgObjNamesStorage.firstIndex(of: resultImageObjName) {
                 
                 if (indexObj == 0) {
-                    //print("percent of executing: ", percentageOfCompletion)
-                    indicatorView.readyPart = percentageOfCompletion
+                    progressIndicatorView.readyPart = percentageOfCompletion
+                    progressRadialIndicatorView.readyPart = percentageOfCompletion
                 }
+                
+                if let imgCell = collectionOfResultImg.cellForItem(at:IndexPath(row: indexObj, section: 0)) as? ImgCell {
+                    imgCell.readyImg = percentageOfCompletion
+                }
+                
                 if percentageOfCompletion == 1 {
                     if (indexObj == 0){ //if this resultObj is last in storage
                         resultImageView.image = loadImage(imageName:resultImageObjName, size:resultImageView.bounds.size)
-                        indicatorView.readyPart = percentageOfCompletion
-                        
-                        //hide indicator view animated
-                        UIView.animate(withDuration: 0.6) {
-                            self.indicatorView.alpha = 0
-                        }
+                        progressIndicatorView.readyPart = percentageOfCompletion
+                        progressRadialIndicatorView.readyPart = percentageOfCompletion
                     }
                     resuableImageStorageCache.removeObject(forKey: resultImageObjName as NSString)//for renew image in Cache in collection delegate calling
                     collectionOfResultImg.reloadItems(at:[IndexPath(row: indexObj, section: 0)])
@@ -157,19 +157,21 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     @IBAction func plusButtonTapped(_ sender: UIButton) {
 
         let alertcontroller = UIAlertController(title: nil, message:nil, preferredStyle: .actionSheet)
-        alertcontroller.addAction(UIAlertAction(title: "take from Photo", style: .default, handler: { (UIAlertAction) in
+        alertcontroller.addAction(UIAlertAction(title: "Take from Photo", style: .default, handler: { (UIAlertAction) in
             self.getImageFrom("Photo")
             self.changeLookOfChoosePictureContainer()
         }))
         
-        alertcontroller.addAction(UIAlertAction(title: "use Camera", style: .default, handler: { (UIAlertAction) in
+        alertcontroller.addAction(UIAlertAction(title: "Use Camera", style: .default, handler: { (UIAlertAction) in
             self.getImageFrom("Camera")
             self.changeLookOfChoosePictureContainer()
         }))
-        alertcontroller.addAction(UIAlertAction(title: "load by link", style: .default, handler: { (UIAlertAction) in
+        alertcontroller.addAction(UIAlertAction(title: "Load by link", style: .default, handler: { (UIAlertAction) in
+            self.showURLAllert()
             //self.showSafariVC(for:"https://www.google.com/")
             //self.performSegue(withIdentifier: "popEnterURLcontroller", sender: self)
         }))
+
         alertcontroller.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: { (UIAlertAction) in
             self.changeLookOfChoosePictureContainer()
         }))
@@ -192,7 +194,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         }
         self.present(imagePickerController, animated: true, completion: nil)
     }
-    
+  
     //picker controller Delegate
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
 
@@ -258,7 +260,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         }
     }
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "resultImgCell", for: indexPath)
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "resultImgCell", for: indexPath) as! ImgCell
         let resultObjName = resImgObjNamesStorage[indexPath.row]
         //need guard this
         let imgView = cell.contentView.viewWithTag(1) as! UIImageView
@@ -272,10 +274,18 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         if let image = resuableImageStorageCache.object(forKey: resultObjName as NSString){
             imgView.image = image
         } else {
+            imgView.image = nil
+            let activityIndicator = UIActivityIndicatorView(style: .whiteLarge)
+            activityIndicator.frame = cell.contentView.bounds
+            cell.addSubview(activityIndicator)
+            activityIndicator.startAnimating()
+            
             let size = imgView.bounds.size
             DispatchQueue.global(qos: .userInitiated).async {
                 if let image =  loadImage(imageName:resultObjName, size: size){
                     DispatchQueue.main.async {
+                        activityIndicator.stopAnimating()
+                        activityIndicator.removeFromSuperview()
                         self.resuableImageStorageCache.setObject(image, forKey:resultObjName as NSString)
                         self.collectionOfResultImg.reloadItems(at: [indexPath])
                     }
@@ -433,3 +443,23 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     }
 }
 
+class ImgCell: UICollectionViewCell {
+    var indicatorView:RadialIndicatorView? = nil
+    var readyImg = 1.00 {
+        didSet (newValue) {
+            if newValue < 1.00 {
+                if indicatorView == nil {
+                    indicatorView = RadialIndicatorView(frame: self.bounds)
+                    indicatorView!.backgroundColor = UIColor.init(white: 0.5, alpha: 0.5)
+                    self.addSubview(indicatorView!)
+                }
+                indicatorView!.readyPart = newValue
+            } else {
+                if indicatorView != nil {
+                    indicatorView!.removeFromSuperview()
+                    indicatorView = nil
+                }
+            }
+        }
+    }
+}
