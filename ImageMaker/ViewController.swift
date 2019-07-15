@@ -125,7 +125,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     
         //imageResultObj DELEGATE
     func changedImgResultObj(resultImageObjName: String, error: Error?, percentageOfCompletion: Double) {
-        print("changedImgResultObj call")
+       // print("changedImgResultObj call")
 
         if error != nil {
             print("changedImgResultObj some error occures: ", error as Any)
@@ -262,14 +262,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "resultImgCell", for: indexPath) as! ImgCell
         let resultObjName = resImgObjNamesStorage[indexPath.row]
-        //need guard this
         let imgView = cell.contentView.viewWithTag(1) as! UIImageView
-
-        /*
-        if resultObj.convertProcessDone == 1.0 {
-        } else {
-            imgView.image = nil
-        }*/
         
         if let image = resuableImageStorageCache.object(forKey: resultObjName as NSString){
             imgView.image = image
@@ -295,11 +288,6 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
 
         return cell
     }
-    
-    func configureCell(_ cell: UICollectionViewCell){
-        
-    }
-
 
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
         let side = collectionView.bounds.height > collectionView.bounds.width ? collectionView.bounds.width : collectionView.bounds.height
@@ -326,11 +314,19 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         return true
     }
     
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        resultImageView.image = loadImage(imageName: resImgObjNamesStorage[indexPath.row], size:resultImageView.bounds.size)
+    }
+    
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "resultImgCell", for: indexPath)
+       /* let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "resultImgCell", for: indexPath)
+        cell.isHighlighted = false
+        
+        //let choosedCellImageName = resImgObjNamesStorage[indexPath.row]
+        resultImageView.image = loadImage(imageName: resImgObjNamesStorage[indexPath.row], size:resultImageView.bounds.size)
         //let resultObj = resImgObjNamesStorage[indexPath.row]
-        //print("resultObj hase name: ", resultObj.imageName)
-        cell.isHighlighted = true
+        print("resultObj at index: ", indexPath.row, " hase name: ", resImgObjNamesStorage[indexPath.row])*/
+        
     }
     //collection view flow layout delegate
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
