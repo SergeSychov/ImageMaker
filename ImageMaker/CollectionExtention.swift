@@ -104,6 +104,11 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDataSource
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "resultImgCell", for: indexPath)
         cell.isSelected = true
         resultImageView.image = loadImage(imageName: resImgObjNamesStorage[indexPath.row], size:resultImageView.bounds.size)
+        if indexPath != IndexPath(item: 0, section: 0){ //don't allow add the existing img to collection
+            addToCollectionCurrentImageButton.isEnabled = false
+        } else {
+            addToCollectionCurrentImageButton.isEnabled = false
+        }
     }
     
     //collection view flow layout delegate
