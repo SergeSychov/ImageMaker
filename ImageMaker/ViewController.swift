@@ -92,24 +92,31 @@ class ViewController: UIViewController, UIPopoverPresentationControllerDelegate,
         }
         
     }
+    
+    func createNewResImgObjAndAddToCollection(_ ingURL: URL) -> Bool{
+        let newResObj = ResultImageObj(ingURL, delegate: self)
+        if newResObj != nil {
+            curentResObj = newResObj
+            resImgObjNamesStorage.insert(newResObj!.imageName, at: 0)
+            
+            //and add new cell for collection View
+            collectionOfResultImg.performBatchUpdates({
+                collectionOfResultImg.insertItems(at: [IndexPath(item: 0, section: 0)])
+            }) { (true) in
+                self.collectionOfResultImg.selectItem(at: IndexPath(item: 0, section: 0), animated: true, scrollPosition: .right)
+            }
+            return true
+        } else {
+            return false
+        }
+    }
     //convert image actions
     @IBAction func convertImageAction(_ sender: UIButton) {
         progressIndicatorView.readyPart = 0.00
         progressRadialIndicatorView.readyPart = 0.00
 
         if isUserChoosedNewImage { //if it's new image
-            //create new empty resultObj add it to result storage aray
-            let newResObj = ResultImageObj(inputImageUrl!, delegate: self)
-                if newResObj != nil {
-                    curentResObj = newResObj
-                    resImgObjNamesStorage.insert(newResObj!.imageName, at: 0)
-                
-                //and add new cell for collection View
-                    collectionOfResultImg.performBatchUpdates({
-                    collectionOfResultImg.insertItems(at: [IndexPath(item: 0, section: 0)])
-                }) { (true) in
-                    self.collectionOfResultImg.selectItem(at: IndexPath(item: 0, section: 0), animated: true, scrollPosition: .right)
-                }
+            if createNewResImgObjAndAddToCollection(inputImageUrl!){
                 isUserChoosedNewImage = false //now new image seted as input for convertion
             }
         }
@@ -238,6 +245,22 @@ class ViewController: UIViewController, UIPopoverPresentationControllerDelegate,
     @IBOutlet weak var choosePicthureContainerView: UIView!
     @IBAction func tapWorksImageView(_ sender: UITapGestureRecognizer) {
         self.changeLookOfChoosePictureContainer()
+    }
+    
+    @IBAction func useButtonTapped(_ sender: Any) {
+        if resImgObjNamesStorage.count > 0 {
+            var cellectedCelIndexPatch = collectionOfResultImg.indexPathsForSelectedItems?.first
+            if cellectedCelIndexPatch == nil {
+                cellectedCelIndexPatch = IndexPath(item: 0, section: 0)
+            }
+            
+            do {
+                try userDidChoosedNewImg(urlForFileNamed(resImgObjNamesStorage[cellectedCelIndexPatch!.row]))
+            }
+            catch {
+                print("useButtonTapped error:", error)
+            }
+        }
     }
     
     @IBAction func shareButtonTapped(_ sender: Any) {
