@@ -24,6 +24,7 @@ class ViewController: UIViewController, UIPopoverPresentationControllerDelegate,
     @IBOutlet weak var loadIndicatorView: LinearIndicatorView!
     @IBOutlet weak var progressIndicatorView: LinearIndicatorView!
     @IBOutlet weak var progressRadialIndicatorView: RadialIndicatorView!
+    @IBOutlet weak var addToCollectionCurrentImageButton: UIButton!
     
     var inputImageUrl: URL? //need only for save
     var curentResObj:ResultImageObj?
@@ -153,6 +154,7 @@ class ViewController: UIViewController, UIPopoverPresentationControllerDelegate,
                         resultImageView.image = loadImage(imageName:resultImageObjName, size:resultImageView.bounds.size)
                         progressIndicatorView.readyPart = percentageOfCompletion
                         progressRadialIndicatorView.readyPart = percentageOfCompletion
+                        addToCollectionCurrentImageButton.isEnabled = true
                     }
                     resuableImageStorageCache.removeObject(forKey: resultImageObjName as NSString)//for renew image in Cache in collection delegate calling
                     collectionOfResultImg.reloadItems(at:[IndexPath(item: indexObj, section: 0)])
@@ -297,6 +299,24 @@ class ViewController: UIViewController, UIPopoverPresentationControllerDelegate,
             }
         }
 
+    }
+    
+    @IBAction func addTocollectionButtonTapped(_ sender: Any) {
+        if resImgObjNamesStorage.count > 0 {
+            var cellectedCelIndexPatch = collectionOfResultImg.indexPathsForSelectedItems?.first
+            if cellectedCelIndexPatch == nil {
+                cellectedCelIndexPatch = IndexPath(item: 0, section: 0)
+            }
+            
+            do {
+                if try createNewResImgObjAndAddToCollection(urlForFileNamed(resImgObjNamesStorage[cellectedCelIndexPatch!.row])){
+                    collectionOfResultImg.reloadItems(at:[IndexPath(item: 0, section: 0)])
+                }
+            }
+            catch {
+                print("addTocollectionButtonTapped error:", error)
+            }
+        }
     }
     
     func changeLookOfChoosePictureContainer(){
