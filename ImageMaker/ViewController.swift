@@ -26,17 +26,25 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     @IBOutlet weak var progressRadialIndicatorView: RadialIndicatorView!
     
     var inputImageUrl: URL? //need only for save
-    var resImgObjNamesStorage = [String]()
+    //var resImgObjNamesStorage = [String]()
     var curentResObj:ResultImageObj?
     var resuableImageStorageCache = NSCache<NSString, UIImage>()
     
+    var alertURLController: UIAlertController?
+
+    var resImgObjNamesStorage = [String](){
+        didSet{
+            DispatchQueue.global(qos: .background).async {
+                self.saveObjsNamesToDisc()
+            }
+        }
+    }
     var isUserChoosedNewImage: Bool{
         get {
             let isUserChoosed = UserDefaults.standard.bool(forKey: "isUserChoosedNewImage")
             return isUserChoosed //UserDefaults.standard.bool(forKey: "isUserChoosedNewImage")
         }
         set (newValue){
-            
             UserDefaults.standard.set(newValue, forKey: "isUserChoosedNewImage")
         }
     }
@@ -55,21 +63,15 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         progressIndicatorView.alpha = 0
         progressRadialIndicatorView.alpha = 0
         
-        //add observeres to save main variables
-        NotificationCenter.default.addObserver(self, selector: #selector(appGoesOff), name: UIApplication.willResignActiveNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(appGoesOff), name: UIApplication.willTerminateNotification, object: nil)
-        // Do any additional setup after loading the view.
+        collectionOfResultImg.allowsSelection = true
+        collectionOfResultImg.allowsMultipleSelection = false
+        if resImgObjNamesStorage.count > 0 {
+            collectionOfResultImg.selectItem(at: IndexPath(item: 0, section: 0), animated: false, scrollPosition: .right)
+        }
+        
         super.viewDidLoad()
     }
 
-    override func didReceiveMemoryWarning() {
-        saveObjsNamesToDisc()
-    }
-    
-    @objc func appGoesOff() {
-        saveObjsNamesToDisc()
-    }
-    
     //getting new images
     func userDidChoosedNewImg(_ imageURL:URL){
         do {
@@ -148,7 +150,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                         progressRadialIndicatorView.readyPart = percentageOfCompletion
                     }
                     resuableImageStorageCache.removeObject(forKey: resultImageObjName as NSString)//for renew image in Cache in collection delegate calling
-                    collectionOfResultImg.reloadItems(at:[IndexPath(row: indexObj, section: 0)])
+                    collectionOfResultImg.reloadItems(at:[IndexPath(item: indexObj, section: 0)])
                 }
             }
         }
@@ -241,12 +243,43 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     }
     
     @IBAction func shareButtonTapped(_ sender: Any) {
-        /*for item in resImgObjStorage {
-            print(item as Any)
-        }*/
+        
+        if resImgObjNamesStorage.count > 0 {
+            var cellectedCelIndexPatch = collectionOfResultImg.indexPathsForSelectedItems?.first
+            if cellectedCelIndexPatch == nil {
+                cellectedCelIndexPatch = IndexPath(item: 0, section: 0)
+            }
+            do {
+                let imageToShare = try UIImage(contentsOfFile: urlForFileNamed(resImgObjNamesStorage[cellectedCelIndexPatch!.row]).path)
+                
+                let alertController = UIAlertController(title: "Save image to photo library", message:nil, preferredStyle: .alert)
+                
+                alertController.addAction(UIAlertAction(title: "Ok", style: .default, handler: { (UIAlertAction) in
+                    UIImageWriteToSavedPhotosAlbum(imageToShare!, nil, nil, nil)
+                }))
+                
+                alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { (UIAlertAction) in
+                    
+                }))
+                present(alertController, animated: true, completion: nil)
+                
+                /* //Use activity
+                 
+                 
+                 let imageToShare = try UIImage(contentsOfFile: urlForFileNamed(resImgObjNamesStorage[cellectedCelIndexPatch.row]).path)
+                 let activityViewController = UIActivityViewController(activityItems: [imageToShare!], applicationActivities: nil)
+                 activityViewController.popoverPresentationController?.sourceView = self.view
+                 activityViewController.excludedActivityTypes = [.assignToContact, .airDrop,.mail,.message, .airDrop, .postToFacebook,.copyToPasteboard ]
+                 self.present(activityViewController, animated: true, completion: nil)
+                 */
+            }
+            catch {
+                print("shareButtonTapped error: ",error)
+            }
+        }
+
     }
     
-
     //collection view data sourse
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 1
@@ -275,17 +308,18 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             
             let size = imgView.bounds.size
             DispatchQueue.global(qos: .userInitiated).async {
-                if let image =  loadImage(imageName:resultObjName, size: size){
+                //if let image =  loadImage(imageName:resultObjName, size: size){
+                 let image =  loadImage(imageName:resultObjName, size: size)
                     DispatchQueue.main.async {
                         activityIndicator.stopAnimating()
                         activityIndicator.removeFromSuperview()
-                        self.resuableImageStorageCache.setObject(image, forKey:resultObjName as NSString)
-                        self.collectionOfResultImg.reloadItems(at: [indexPath])
+                        if image != nil {
+                            self.resuableImageStorageCache.setObject(image!, forKey:resultObjName as NSString)
+                            self.collectionOfResultImg.reloadItems(at: [indexPath])
+                        }
                     }
                 }
-            }
         }
-
         return cell
     }
 
@@ -310,24 +344,37 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     
     //collection view delegate
     
+    /*
     func collectionView(_ collectionView: UICollectionView, shouldDeselectItemAt indexPath: IndexPath) -> Bool {
+        return false
+    }
+    func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
+        //let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "resultImgCell", for: indexPath)
+       // cell.isSelected = true
         return true
     }
+    func collectionView(_ collectionView: UICollectionView, shouldDeselectItemAt indexPath: IndexPath) -> Bool {
+        return true
+    }*/
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "resultImgCell", for: indexPath)
+        cell.isSelected = true
         resultImageView.image = loadImage(imageName: resImgObjNamesStorage[indexPath.row], size:resultImageView.bounds.size)
     }
-    
+    /*
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
-       /* let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "resultImgCell", for: indexPath)
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "resultImgCell", for: indexPath)
         cell.isHighlighted = false
         
         //let choosedCellImageName = resImgObjNamesStorage[indexPath.row]
         resultImageView.image = loadImage(imageName: resImgObjNamesStorage[indexPath.row], size:resultImageView.bounds.size)
         //let resultObj = resImgObjNamesStorage[indexPath.row]
-        print("resultObj at index: ", indexPath.row, " hase name: ", resImgObjNamesStorage[indexPath.row])*/
+        print("resultObj at index: ", indexPath.row, " hase name: ", resImgObjNamesStorage[indexPath.row])
         
     }
+     */
     //collection view flow layout delegate
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let height = collectionView.frame.size.height-2.0
@@ -404,6 +451,37 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                 if let image = loadImage(imageName:resImgObjNamesStorage.first!, size:resultImageView.bounds.size){
                     resultImageView.image = image
                 }
+                
+                //check image with names and delete BAD images (can't load image)
+                DispatchQueue.global(qos: .background).async {
+                    var bedDataFilesPatches = [IndexPath]()
+                    var renewedNameStorage = [String]()
+                    for  item in self.resImgObjNamesStorage {
+                        do {
+                            if let _ = CIImage(contentsOf: try urlForFileNamed(item)){
+                                renewedNameStorage.append(item)
+                            } else {
+                                bedDataFilesPatches.append(IndexPath(item: self.resImgObjNamesStorage.firstIndex(of: item)!, section: 0))
+                            }
+                        }
+                        catch {
+                            bedDataFilesPatches.append(IndexPath(item: self.resImgObjNamesStorage.firstIndex(of: item)!, section: 0))
+                        }
+                        
+                    }
+                    if bedDataFilesPatches.count > 0 {
+                        DispatchQueue.main.async {
+                            
+                            self.resImgObjNamesStorage = renewedNameStorage
+                            self.collectionOfResultImg.performBatchUpdates({
+                                self.collectionOfResultImg.deleteItems(at: bedDataFilesPatches)
+                            }) { (true) in
+                                self.collectionOfResultImg.reloadData()
+                            }
+                        }
+                    }
+                }
+                    
             }
         }
     }
@@ -444,6 +522,7 @@ class ImgCell: UICollectionViewCell {
     var readyImg = 1.00 {
         didSet (newValue) {
             if newValue < 1.00 {
+
                 if indicatorView == nil {
                     indicatorView = RadialIndicatorView(frame: self.bounds)
                     indicatorView!.backgroundColor = UIColor.init(white: 0.5, alpha: 0.5)
