@@ -11,6 +11,9 @@ import UIKit
 
 
 class ImgCell: UICollectionViewCell {
+    
+    @IBOutlet weak var delCellButton: UIButton!
+    
     var indicatorView:RadialIndicatorView? = nil
     var readyImg = 1.00 {
         didSet (newValue) {
@@ -76,6 +79,12 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDataSource
                 }
             }
         }
+        
+       if cell.isSelected{
+            cell.delCellButton.isHidden = false
+        } else {
+            cell.delCellButton.isHidden = true
+        }
         return cell
     }
     
@@ -97,17 +106,28 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDataSource
             }
         }
     }
-    
+
     //collection view delegate
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "resultImgCell", for: indexPath)
-        cell.isSelected = true
-        resultImageView.image = loadImage(imageName: resImgObjNamesStorage[indexPath.row], size:resultImageView.bounds.size)
-        if indexPath != IndexPath(item: 0, section: 0){ //don't allow add the existing img to collection
-            addToCollectionCurrentImageButton.isEnabled = false
-        } else {
-            addToCollectionCurrentImageButton.isEnabled = false
+        if let cell = collectionView.cellForItem(at: indexPath) as? ImgCell{
+            cell.isSelected = true
+            resultImageView.image = loadImage(imageName: resImgObjNamesStorage[indexPath.row], size:resultImageView.bounds.size)
+            if indexPath != IndexPath(item: 0, section: 0){ //don't allow add the existing img to collection
+                self.addToCollectionCurrentImageButton.isEnabled = false
+
+                cell.delCellButton.isHidden = false //enable to delete not first cell in any others cases - hide dell button
+            } else {
+                self.addToCollectionCurrentImageButton.isEnabled = true
+                cell.delCellButton.isHidden = true
+            }
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+        if let cell = collectionView.cellForItem(at: indexPath) as? ImgCell{
+            cell.isSelected = false
+            cell.delCellButton.isHidden = true
         }
     }
     
