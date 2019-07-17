@@ -175,10 +175,22 @@ class ViewController: UIViewController, UIPopoverPresentationControllerDelegate,
             self.getImageFrom("Camera")
             self.changeLookOfChoosePictureContainer()
         }))
-        alertcontroller.addAction(UIAlertAction(title: "Load by link", style: .default, handler: { (UIAlertAction) in
-            self.showURLAllert()
-            //self.showSafariVC(for:"https://www.google.com/")
-            //self.performSegue(withIdentifier: "popEnterURLcontroller", sender: self)
+        
+        let urlFromPasteBoard = UIPasteboard.general.url
+        let loadFromCopiedURL_Action = UIAlertAction(title: "Load by copied link", style: .default) { (UIAlertAction) in
+            self.downloadImageFromURL(urlFromPasteBoard!)
+            self.changeLookOfChoosePictureContainer()
+        }
+        if urlFromPasteBoard == nil {
+            loadFromCopiedURL_Action.isEnabled = false
+        }
+        alertcontroller.addAction(loadFromCopiedURL_Action)
+        
+        
+        alertcontroller.addAction(UIAlertAction(title: "Load Big Size > 10 MB", style: .default, handler: { (UIAlertAction) in
+            let url = URL(string: "https://svs.gsfc.nasa.gov/vis/a000000/a003800/a003878/loop_poster3.1500.jpg")
+            self.downloadImageFromURL(url!)
+            self.changeLookOfChoosePictureContainer()
         }))
 
         alertcontroller.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: { (UIAlertAction) in
@@ -302,6 +314,7 @@ class ViewController: UIViewController, UIPopoverPresentationControllerDelegate,
     }
     
     @IBAction func addTocollectionButtonTapped(_ sender: Any) {
+        
         if resImgObjNamesStorage.count > 0 {
             var cellectedCelIndexPatch = collectionOfResultImg.indexPathsForSelectedItems?.first
             if cellectedCelIndexPatch == nil {
@@ -315,6 +328,43 @@ class ViewController: UIViewController, UIPopoverPresentationControllerDelegate,
             }
             catch {
                 print("addTocollectionButtonTapped error:", error)
+            }
+        }
+    }
+    
+    
+    @IBAction func delCellButtonTapped(_ sender: Any) {
+        if var cellectedCellIndexPatch = collectionOfResultImg.indexPathsForSelectedItems?.first {
+            if cellectedCellIndexPatch != IndexPath(item: 0, section: 0){//if selected not first cell - allow to delete it
+                let nameObjToDelet = resImgObjNamesStorage[cellectedCellIndexPatch.item]
+                if !removeFile(named: nameObjToDelet) {
+                    print("cant delete file")
+                }
+                resImgObjNamesStorage.remove(at: cellectedCellIndexPatch.item)
+
+                self.collectionOfResultImg.performBatchUpdates({
+                    self.collectionOfResultImg.deleteItems(at: [cellectedCellIndexPatch])
+                }) { (true) in
+                        self.resultImageView.image = nil
+                }
+            }
+        }
+    }
+    
+    @objc func dellCell() {
+        if var cellectedCellIndexPatch = collectionOfResultImg.indexPathsForSelectedItems?.first {
+            if cellectedCellIndexPatch != IndexPath(item: 0, section: 0){//if selected not first cell - allow to delete it
+                let nameObjToDelet = resImgObjNamesStorage[cellectedCellIndexPatch.item]
+                if !removeFile(named: nameObjToDelet) {
+                    print("cant delete file")
+                }
+                resImgObjNamesStorage.remove(at: cellectedCellIndexPatch.item)
+                
+                self.collectionOfResultImg.performBatchUpdates({
+                    self.collectionOfResultImg.deleteItems(at: [cellectedCellIndexPatch])
+                }) { (true) in
+                    self.resultImageView.image = nil
+                }
             }
         }
     }
