@@ -11,97 +11,141 @@ import UIKit
 class LinearIndicatorView: UIView {
     
     let indicatorColor:UIColor? = nil
-    let pieces = 25
-    let indentFromSides:CGFloat  = 0.10
-    let lineWidth:CGFloat = 1.00
+    let lineWidth:CGFloat = 1.0
+    let minPiecesQnty = 5 //min value of pieces of indicat
+
+    var isHorisontal:Bool?
+    var pieceSize:CGSize?
+    var pieceRadius: CGFloat?
+    var totalPiecesQuantity:Int?
+    var donePieces:Int = 0
     
-    var readyPart = 0.00 {
-        didSet (newValue){
-            if newValue == 1 {
+    func setMeasures(rect: CGRect){
+        isHorisontal = rect.width > rect.height ? true : false
+        if isHorisontal! {
+            totalPiecesQuantity = rect.width / rect.height > CGFloat(minPiecesQnty) ? Int(rect.width / rect.height) : minPiecesQnty
+            pieceSize = CGSize(width: rect.width / CGFloat(totalPiecesQuantity!), height: rect.height)
+        } else {
+            totalPiecesQuantity = rect.height / rect.width > CGFloat(minPiecesQnty) ? Int(rect.height / rect.width) : minPiecesQnty
+            pieceSize = CGSize(width: rect.width, height: rect.height / CGFloat(totalPiecesQuantity!))
+        }
+        pieceRadius = pieceSize!.width < pieceSize!.height ? pieceSize!.width * 0.8 / 2 : pieceSize!.height * 0.8 / 2
+    }
+    
+    var readyPart:Double? { //percent of ready part
+        willSet (newValue) {
+            if  Int(newValue! * Double(totalPiecesQuantity!)) != donePieces {
+                donePieces = Int(newValue! * Double(totalPiecesQuantity!))
                 self.setNeedsDisplay()
-                hideSelfAnimated()
-            } else {
-                if self.alpha == 0 {
-                    showSelfAnimated()
-                }
                 setAnimation()
             }
         }
     }
-    
+   
+    var animationLayer:CAShapeLayer?
     func setAnimation(){
-        let animationLayerTwo = CAShapeLayer()
-        animationLayerTwo.opacity = 0.00
-        self.layer.addSublayer(animationLayerTwo)
-
-        animationLayerTwo.path = drawLinearPatchInRect(rct: self.bounds, sideIndetn: indentFromSides, totalPieces: pieces, donePart: readyPart).cgPath
-        animationLayerTwo.fillColor = indicatorColor?.cgColor ?? UIColor.white.cgColor
-        animationLayerTwo.strokeColor = indicatorColor?.cgColor ?? UIColor.white.cgColor
-
-        let opacityAnimation = CABasicAnimation(keyPath: "opacity")
-        opacityAnimation.fromValue = NSNumber.init(value: 0.00)
-        opacityAnimation.toValue = NSNumber.init(value: 1.00)
-        opacityAnimation.duration = 0.2
         
-        animationLayerTwo.add(opacityAnimation, forKey: "opacity")
-    }
-    
+        if animationLayer == nil {
+            animationLayer = CAShapeLayer()
+            animationLayer!.bounds = CGRect(x: 0, y: 0, width: pieceSize!.width, height: pieceSize!.height)
 
-    
+            //set position
+            let centerPoint = CGPoint(x: pieceSize!.width / 2, y: pieceSize!.height / 2)
+            animationLayer!.path = UIBezierPath(arcCenter: centerPoint, radius: pieceRadius!, startAngle: 0, endAngle: CGFloat(Double.pi * 2), clockwise: true).cgPath
+            animationLayer!.fillColor = indicatorColor?.cgColor ?? UIColor.white.cgColor
+            animationLayer!.strokeColor = indicatorColor?.cgColor ?? UIColor.white.cgColor
+            
+            animationLayer!.position = centerPoint
+            
+            self.layer.addSublayer(animationLayer!)
+            
+            animationLayer!.opacity = 0.00
+            let opacityAnimation = CABasicAnimation(keyPath: "opacity")
+            opacityAnimation.fromValue = NSNumber.init(value: 0.00)
+            opacityAnimation.toValue = NSNumber.init(value: 1.00)
+
+            let scaleAnimation = CABasicAnimation(keyPath: "transform.scale")
+            scaleAnimation.fromValue = NSNumber.init(value: 0.00)
+            scaleAnimation.toValue = NSNumber.init(value: 1.2)
+            
+            let layerAnimationGroup = CAAnimationGroup()
+            layerAnimationGroup.animations = [opacityAnimation, scaleAnimation]
+            layerAnimationGroup.duration = 0.3
+            
+            layerAnimationGroup.repeatCount = Float.infinity
+            layerAnimationGroup.autoreverses = true
+            
+            animationLayer!.add(layerAnimationGroup, forKey: nil)
+
+        }
+
+        var newPositionPoint: CGPoint
+        if isHorisontal! {
+            newPositionPoint = CGPoint(x: CGFloat(donePieces) * pieceSize!.width + pieceSize!.width / 2, y: pieceSize!.height / 2)
+        } else {
+            newPositionPoint = CGPoint(x: pieceSize!.height / 2, y: CGFloat(donePieces) * pieceSize!.height + pieceSize!.height / 2)
+        }
+        animationLayer!.position = newPositionPoint
+    }
+
     // Only override draw() if you perform custom drawing.
     // An empty implementation adversely affects performance during animation.
     override func draw(_ rect: CGRect) {
-        drawInitialIndicatorWithContext(context: UIGraphicsGetCurrentContext()!, rct: rect)
+        setMeasures(rect: rect)
+        drawWithContext(context: UIGraphicsGetCurrentContext()!)
         // Drawing code
     }
     
     
-    func drawInitialIndicatorWithContext(context: CGContext, rct: CGRect) {
+    func drawWithContext(context: CGContext) {
         
-        context.addPath(drawLinearPatchInRect(rct: rct, sideIndetn: indentFromSides, totalPieces: pieces, donePart: 1.00).cgPath)
         context.setLineWidth(lineWidth) //lineWidth
         context.setStrokeColor(indicatorColor?.cgColor ?? UIColor.white.cgColor)
-        if (readyPart == 1) {
-            context.drawPath(using: .stroke)
-            context.drawPath(using: .fill)
-        } else {
-            context.drawPath(using: .stroke)
-        }
+        context.setFillColor(indicatorColor?.cgColor ?? UIColor.white.cgColor)
         
-    }
-    
-    func drawLinearPatchInRect(rct:CGRect, sideIndetn: CGFloat, totalPieces:Int, donePart:Double) -> UIBezierPath {
-        
-        let patch = UIBezierPath()
-        
-        let isHorisontal = rct.width > rct.height ? true : false
-        let measure = isHorisontal ? rct.width : rct.height
-        let step = measure * (1 - 2*sideIndetn) / CGFloat(totalPieces)
-        let radius = step * 2 / 3
-        
-        let intDone = Int(round(donePart * Double(totalPieces)))
-        
-        for item in 0...intDone {
+        let patchDone = UIBezierPath()
+        for item in 0...donePieces {
             var circleCenter:CGPoint
             var point1:CGPoint
             
-            if isHorisontal {
-                circleCenter = CGPoint(x: measure * sideIndetn + CGFloat(item) * step, y: rct.height / 2 )
-                point1 = circleCenter
-                point1.x += radius / 2
+            if isHorisontal! {
+                circleCenter = CGPoint(x: CGFloat(item) * pieceSize!.width - pieceSize!.width / 2, y:  pieceSize!.height / 2 )
+                point1 = CGPoint(x: CGFloat(item) * pieceSize!.width - pieceSize!.width / 2 + pieceRadius!, y:  pieceSize!.height / 2 )
             } else {
-                circleCenter = CGPoint(x: rct.width / 2 , y: measure * sideIndetn + CGFloat(item) * step)
-                point1 = circleCenter
-                point1.y += radius / 2
+                circleCenter = CGPoint(x: pieceSize!.width / 2 , y: CGFloat(item) * pieceSize!.height - pieceSize!.height / 2)
+                point1 = CGPoint(x: pieceSize!.width / 2 + pieceRadius! , y: CGFloat(item) * pieceSize!.height - pieceSize!.height / 2)
             }
+            patchDone.move(to: point1)
+            patchDone.addArc(withCenter: circleCenter, radius: pieceRadius!, startAngle: 0, endAngle: CGFloat(Double.pi * 2), clockwise: true)
             
-            patch.move(to: point1)
-            patch.addArc(withCenter: circleCenter, radius: radius/2, startAngle: 0, endAngle: CGFloat(Double.pi * 2), clockwise: true)
         }
+        //draw done indicators
+        context.addPath(patchDone.cgPath)
+        context.drawPath(using: .fill)
         
-        return patch
+        if donePieces < totalPiecesQuantity! {
+            let patchEmpty = UIBezierPath()
+            for item in (donePieces + 1)...totalPiecesQuantity! {
+                var circleCenter:CGPoint
+                var point1:CGPoint
+                
+                if isHorisontal! {
+                    circleCenter = CGPoint(x: CGFloat(item) * pieceSize!.width - pieceSize!.width / 2, y:  pieceSize!.height / 2 )
+                    point1 = CGPoint(x: CGFloat(item) * pieceSize!.width - pieceSize!.width / 2 + pieceRadius!, y:  pieceSize!.height / 2 )
+                } else {
+                    circleCenter = CGPoint(x: pieceSize!.width / 2 , y: CGFloat(item) * pieceSize!.height - pieceSize!.height / 2)
+                    point1 = CGPoint(x: pieceSize!.width / 2 + pieceRadius! , y: CGFloat(item) * pieceSize!.height - pieceSize!.height / 2)
+                }
+                patchEmpty.move(to: point1)
+                patchEmpty.addArc(withCenter: circleCenter, radius: pieceRadius!, startAngle: 0, endAngle: CGFloat(Double.pi * 2), clockwise: true)
+                
+            }
+            //draw empty indicators
+            context.addPath(patchEmpty.cgPath)
+            context.drawPath(using: .stroke)
+        }
     }
-    
+
     func hideSelfAnimated(){
         UIView.animate(withDuration: 0.6) {
             self.alpha = 0
@@ -121,7 +165,6 @@ class LinearIndicatorView: UIView {
 class RadialIndicatorView: UIView {
     
     var indicatorColor:UIColor? = nil
-
     var lineWidth:CGFloat = 1.00
     
     var readyPart = 0.00 {
@@ -175,14 +218,14 @@ class RadialIndicatorView: UIView {
     }
     
     func hideSelfAnimated(){
-        UIView.animate(withDuration: 0.6) {
-            self.alpha = 0
-        }
+        UIView.animate(withDuration: 0.6, animations: {
+                self.alpha = 0
+        })
     }
     
     func showSelfAnimated(){
-        UIView.animate(withDuration: 0.6) {
+        UIView.animate(withDuration: 0.6, animations: {
             self.alpha = 1
-        }
+        })
     }
 }
