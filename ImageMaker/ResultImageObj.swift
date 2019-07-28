@@ -86,7 +86,8 @@ class ResultImageObj: NSObject, PassDataReady{
         }
         
         //add delay func //Important after define CIImage dependency
-        let delayOp = DelayOperation(Double.random(in: 1...5), self)
+        let randomDelay = Double.random(in: 1...5)
+        let delayOp = DelayOperation(randomDelay, self)
         delayOp.name = "DELAY"
         if self.delayOperation != nil {
             delayOp.addDependency(self.delayOperation!)
@@ -110,7 +111,7 @@ class ResultImageObj: NSObject, PassDataReady{
 
         
         
-        let callOperation = ReadySignalOperation()
+        let callOperation = ReadySignalOperation(randomDelay, self)
         callOperation.addDependency(delayOp)//add delay time dependency
         callOperation.addDependency(saveOperation)
         callOperation.completionBlock = {
@@ -210,7 +211,7 @@ class ConvertOperation: Operation, PassCiImage{
         return image
     }
 
-    init( _ effect:String, _ inputCiImage:CIImage?, _ timeIntervalToDelay:TimeInterval = 1.00){
+    init( _ effect:String, _ inputCiImage:CIImage?){
         self.effect = effect
         self._inputCiImage = inputCiImage
     }
@@ -270,7 +271,52 @@ class SaveUIImageOperation: Operation, PassCiImage{
     }
 }
 
+let delayDistribution = 0.8 //between DelayOperation and ReadySignalOperation need to avoid end progressive counting earlier than finish conversion operation
+
+class DelayOperation: Operation {
+    
+    let timeToExecute:TimeInterval
+    var startDate:Date
+    var delegateToCatchExecuting:PassDataReady?
+    
+    init(_ delayTime:TimeInterval = 1, _ delegate:PassDataReady?){
+        self.timeToExecute = delayTime * delayDistribution
+        self.delegateToCatchExecuting = delegate
+        self.startDate = Date()
+    }
+    override func start() {
+        self.startDate = Date()
+        super.start()
+    }
+    override func main(){
+        while Date(timeInterval: timeToExecute, since: startDate) > Date() {
+            Thread.sleep(forTimeInterval: 0.03) //25 frames per second
+            DispatchQueue.main.async {
+                if self.delegateToCatchExecuting != nil {
+                    self.delegateToCatchExecuting?.percentageOfCompletion( (self.startDate.timeIntervalSinceNow/self.timeToExecute) * (-1) * delayDistribution)
+                }
+            }
+        }
+    }
+}
+
+
 class ReadySignalOperation: Operation, PassCiImage{ //need just for delegate call after delay and saved opperation will be completed
+    
+    let timeToExecute:TimeInterval
+    var startDate:Date
+    var delegateToCatchExecuting:PassDataReady?
+    
+    init(_ delayTime:TimeInterval = 1, _ delegate:PassDataReady?){
+        self.timeToExecute = delayTime * (1.00 - delayDistribution)
+        self.delegateToCatchExecuting = delegate
+        self.startDate = Date()
+    }
+    override func start() {
+        self.startDate = Date()
+        super.start()
+    }
+    
     private let _inputCiImage:CIImage? = nil
     var outCiImage:CIImage?
     
@@ -292,37 +338,16 @@ class ReadySignalOperation: Operation, PassCiImage{ //need just for delegate cal
         if isCancelled {
             return
         }
-        outCiImage = inputCiImage
-    }
-}
-
-class DelayOperation: Operation {
-    
-    let timeToExecute:TimeInterval
-    var startDate:Date
-    var delegateToCatchExecuting:PassDataReady?
-    
-    init(_ delayTime:TimeInterval = 1, _ delegate:PassDataReady?){
-        self.timeToExecute = delayTime
-        self.delegateToCatchExecuting = delegate
-        self.startDate = Date()
-    }
-    override func start() {
-        self.startDate = Date()
-        super.start()
-    }
-    override func main(){
         while Date(timeInterval: timeToExecute, since: startDate) > Date() {
             Thread.sleep(forTimeInterval: 0.03) //25 frames per second
             DispatchQueue.main.async {
                 if self.delegateToCatchExecuting != nil {
-                    self.delegateToCatchExecuting?.percentageOfCompletion( (self.startDate.timeIntervalSinceNow/self.timeToExecute) * (-1))
+                    self.delegateToCatchExecuting?.percentageOfCompletion(delayDistribution + (self.startDate.timeIntervalSinceNow/self.timeToExecute) * (-1) * (1.00 - delayDistribution))
                 }
             }
         }
+        outCiImage = inputCiImage
     }
-
-    
 }
 /*
  func getUIImage(forSize size:CGSize) throws -> UIImage{
