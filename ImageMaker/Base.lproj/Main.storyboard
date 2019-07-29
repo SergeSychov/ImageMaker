@@ -229,11 +229,11 @@
                                                             <constraint firstItem="FwY-T2-nJy" firstAttribute="top" secondItem="Gei-Cv-FWB" secondAttribute="top" id="nfq-g6-R4s"/>
                                                         </constraints>
                                                     </view>
-                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="Rn4-m1-ehg">
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="center" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="Rn4-m1-ehg">
                                                         <rect key="frame" x="321" y="32.5" width="50" height="190"/>
                                                         <subviews>
                                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YOB-D0-efy">
-                                                                <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                                                <rect key="frame" x="10" y="0.0" width="30" height="50"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="height" constant="50" id="hOg-h6-Sgr"/>
                                                                 </constraints>
@@ -270,18 +270,16 @@
                                                     </stackView>
                                                 </subviews>
                                                 <constraints>
-                                                    <constraint firstItem="Rn4-m1-ehg" firstAttribute="centerY" secondItem="2XF-9D-UFD" secondAttribute="centerY" id="XYS-qo-rTR"/>
-                                                    <constraint firstItem="Rn4-m1-ehg" firstAttribute="leading" secondItem="Gei-Cv-FWB" secondAttribute="trailing" constant="8" id="mHE-Vc-k66"/>
                                                     <constraint firstItem="Gei-Cv-FWB" firstAttribute="top" secondItem="2XF-9D-UFD" secondAttribute="top" id="soK-yJ-SSs"/>
                                                 </constraints>
                                             </stackView>
                                         </subviews>
                                         <color key="backgroundColor" red="1" green="1" blue="0.40000000600000002" alpha="1" colorSpace="calibratedRGB"/>
                                         <constraints>
-                                            <constraint firstItem="2XF-9D-UFD" firstAttribute="top" secondItem="jhN-me-2oV" secondAttribute="top" constant="2" id="10w-Uq-hV3"/>
-                                            <constraint firstItem="2XF-9D-UFD" firstAttribute="leading" secondItem="jhN-me-2oV" secondAttribute="leading" constant="2" id="bRa-wc-n23"/>
-                                            <constraint firstAttribute="trailing" secondItem="2XF-9D-UFD" secondAttribute="trailing" constant="2" id="fx3-rb-9q2"/>
-                                            <constraint firstAttribute="bottom" secondItem="2XF-9D-UFD" secondAttribute="bottom" constant="2" id="pAm-JW-qFC"/>
+                                            <constraint firstAttribute="bottom" secondItem="2XF-9D-UFD" secondAttribute="bottom" constant="2" id="BZX-g0-PMu"/>
+                                            <constraint firstItem="2XF-9D-UFD" firstAttribute="leading" secondItem="jhN-me-2oV" secondAttribute="leading" constant="2" id="EC4-r7-0cc"/>
+                                            <constraint firstAttribute="trailing" secondItem="2XF-9D-UFD" secondAttribute="trailing" constant="2" id="YHh-Po-8og"/>
+                                            <constraint firstItem="2XF-9D-UFD" firstAttribute="top" secondItem="jhN-me-2oV" secondAttribute="top" constant="2" id="uEz-x4-reH"/>
                                         </constraints>
                                     </view>
                                     <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="redraw" showsVerticalScrollIndicator="NO" indicatorStyle="white" delaysContentTouches="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="PhT-vF-1Le" userLabel="Storage Collection View">
@@ -304,8 +302,9 @@
                                                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="SDU-LG-54D">
                                                             <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
                                                         </imageView>
-                                                        <button hidden="YES" opaque="NO" contentMode="redraw" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="or5-8r-fcy">
-                                                            <rect key="frame" x="-15" y="-13.5" width="30" height="30"/>
+                                                        <button hidden="YES" opaque="NO" contentMode="redraw" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="or5-8r-fcy">
+                                                            <rect key="frame" x="35" y="35" width="30" height="30"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                             <size key="titleShadowOffset" width="2" height="1"/>
                                                             <state key="normal" title="Del">
                                                                 <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -318,12 +317,10 @@
                                                     </subviews>
                                                 </view>
                                                 <constraints>
-                                                    <constraint firstItem="or5-8r-fcy" firstAttribute="centerX" secondItem="KOg-Hd-AVe" secondAttribute="centerX" id="17T-TR-F0f"/>
-                                                    <constraint firstItem="SDU-LG-54D" firstAttribute="centerX" secondItem="KOg-Hd-AVe" secondAttribute="centerX" id="3vr-Lm-faf"/>
-                                                    <constraint firstItem="SDU-LG-54D" firstAttribute="centerY" secondItem="KOg-Hd-AVe" secondAttribute="centerY" id="ZRS-W8-eu2"/>
-                                                    <constraint firstItem="SDU-LG-54D" firstAttribute="width" secondItem="KOg-Hd-AVe" secondAttribute="width" id="iho-9S-5dL"/>
-                                                    <constraint firstItem="or5-8r-fcy" firstAttribute="centerY" secondItem="KOg-Hd-AVe" secondAttribute="centerY" id="pRN-Lu-1Hg"/>
-                                                    <constraint firstItem="SDU-LG-54D" firstAttribute="height" secondItem="KOg-Hd-AVe" secondAttribute="height" id="wW5-aJ-BTr"/>
+                                                    <constraint firstItem="SDU-LG-54D" firstAttribute="top" secondItem="KOg-Hd-AVe" secondAttribute="top" id="084-N3-4UQ"/>
+                                                    <constraint firstAttribute="bottom" secondItem="SDU-LG-54D" secondAttribute="bottom" id="2Gb-fl-jpw"/>
+                                                    <constraint firstAttribute="trailing" secondItem="SDU-LG-54D" secondAttribute="trailing" id="3zu-OE-rXx"/>
+                                                    <constraint firstItem="SDU-LG-54D" firstAttribute="leading" secondItem="KOg-Hd-AVe" secondAttribute="leading" id="jQW-c7-ksk"/>
                                                 </constraints>
                                                 <connections>
                                                     <outlet property="delCellButton" destination="or5-8r-fcy" id="fJR-hh-JJp"/>
@@ -337,6 +334,7 @@
                                     </collectionView>
                                 </subviews>
                                 <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="jhN-me-2oV" secondAttribute="trailing" id="APh-nP-XMH"/>
                                     <constraint firstItem="jhN-me-2oV" firstAttribute="width" secondItem="woL-eW-Le5" secondAttribute="width" multiplier="8/20" id="B8S-lh-rNa"/>
                                     <constraint firstItem="PhT-vF-1Le" firstAttribute="height" secondItem="woL-eW-Le5" secondAttribute="height" multiplier="3/20" id="GeV-5C-KBu"/>
                                     <constraint firstItem="qQ7-d5-jFS" firstAttribute="width" secondItem="woL-eW-Le5" secondAttribute="width" multiplier="1/20" id="M2P-vg-FIp"/>
@@ -344,9 +342,12 @@
                                     <constraint firstAttribute="trailing" secondItem="PhT-vF-1Le" secondAttribute="trailing" id="Srf-TQ-ZxS"/>
                                     <constraint firstItem="qQ7-d5-jFS" firstAttribute="centerX" secondItem="woL-eW-Le5" secondAttribute="centerX" id="U5L-Xh-sKy"/>
                                     <constraint firstItem="PhT-vF-1Le" firstAttribute="leading" secondItem="woL-eW-Le5" secondAttribute="leading" id="cD2-ql-kwA"/>
+                                    <constraint firstItem="Zqe-vT-Qlz" firstAttribute="leading" secondItem="woL-eW-Le5" secondAttribute="leading" id="gO5-he-gFo"/>
+                                    <constraint firstAttribute="trailing" secondItem="Zqe-vT-Qlz" secondAttribute="trailing" id="gzL-fs-90Y"/>
                                     <constraint firstItem="qQ7-d5-jFS" firstAttribute="leading" secondItem="woL-eW-Le5" secondAttribute="leading" constant="20" id="qiy-61-6P6"/>
                                     <constraint firstItem="jhN-me-2oV" firstAttribute="height" secondItem="woL-eW-Le5" secondAttribute="height" multiplier="8/20" id="thY-3v-A78"/>
                                     <constraint firstAttribute="trailing" secondItem="qQ7-d5-jFS" secondAttribute="trailing" constant="20" id="w4r-jl-et7"/>
+                                    <constraint firstItem="jhN-me-2oV" firstAttribute="leading" secondItem="woL-eW-Le5" secondAttribute="leading" id="wKR-zD-RdB"/>
                                 </constraints>
                                 <variation key="default">
                                     <mask key="constraints">
