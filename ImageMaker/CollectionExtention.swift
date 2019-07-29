@@ -35,8 +35,8 @@ class ImgCell: UICollectionViewCell {
     }
 }
 
-extension ViewController: UICollectionViewDataSource, UICollectionViewDataSourcePrefetching, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
-
+extension ViewController: UICollectionViewDataSource, UICollectionViewDataSourcePrefetching, UICollectionViewDelegate {
+    
     //collection view data sourse
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 1
@@ -130,21 +130,23 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDataSource
             cell.delCellButton.isHidden = true
         }
     }
-    
-    //collection view flow layout delegate
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let height = collectionView.frame.size.height-2.0
-        return CGSize(width: height, height: height)
-    }
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 1.0
-    }
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return 1.0
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        return UIEdgeInsets(top: 0, left:100, bottom: 0, right: 0)
-    }
-    
 }
+
+class CustomFlowLayout: UICollectionViewFlowLayout {
+
+    override func prepare() {
+        super.prepare()
+        if collectionView!.bounds.height < collectionView!.bounds.width {
+            scrollDirection = .horizontal
+            minimumLineSpacing = 2
+            itemSize = CGSize(width: collectionView!.bounds.height-2, height: collectionView!.bounds.height-2)
+            sectionInset = UIEdgeInsets(top: 0, left:(collectionView!.bounds.width - collectionView!.bounds.height) / 2.0  , bottom: 0, right: 0)
+        } else {
+            scrollDirection = .vertical
+            minimumLineSpacing = 2
+            itemSize = CGSize(width: collectionView!.bounds.width-2, height: collectionView!.bounds.width-2)
+            sectionInset = UIEdgeInsets(top: (collectionView!.bounds.height - collectionView!.bounds.width) / 2.0, left:0 , bottom: 0, right: 0)
+        }
+    }
+}
+
