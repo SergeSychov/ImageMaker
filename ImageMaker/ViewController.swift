@@ -17,9 +17,11 @@ let workImageURL = "WorkImageURL"
 
 class ViewController: UIViewController, UIPopoverPresentationControllerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate, ResultImageObjDelegate {
 
-
-    @IBOutlet weak var inputImageView: UIImageView!
-    @IBOutlet weak var resultImageView: UIImageView!
+    @IBOutlet weak var workImageContainer: UIView!
+    @IBOutlet weak var resultImageContainer: UIView!
+    
+    @IBOutlet weak var inputImageView: SelfScaledBorderImageView!
+    @IBOutlet weak var resultImageView: SelfScaledBorderImageView!
     @IBOutlet weak var collectionOfResultImg: UICollectionView!
     @IBOutlet weak var loadIndicatorView: LinearIndicatorView!
     @IBOutlet weak var progressIndicatorView: LinearIndicatorView!
@@ -59,6 +61,7 @@ class ViewController: UIViewController, UIPopoverPresentationControllerDelegate,
         getMainViewsPropertiesAndSetViews() //renew saved images
         
         //set initial view of indicator
+        loadIndicatorView.alpha = 0
         progressIndicatorView.alpha = 0
         progressRadialIndicatorView.alpha = 0
         
@@ -67,6 +70,10 @@ class ViewController: UIViewController, UIPopoverPresentationControllerDelegate,
         if resImgObjNamesStorage.count > 0 {
             collectionOfResultImg.selectItem(at: IndexPath(item: 0, section: 0), animated: false, scrollPosition: .right)
         }
+        
+        //add links for views to get right container rects and set border
+        inputImageView.containerView = workImageContainer
+        resultImageView.containerView = resultImageContainer
         
         super.viewDidLoad()
     }
@@ -114,6 +121,7 @@ class ViewController: UIViewController, UIPopoverPresentationControllerDelegate,
     //convert image actions
     @IBAction func convertImageAction(_ sender: UIButton) {
         progressIndicatorView.readyPart = 0.00
+        progressIndicatorView.showSelfAnimated()
         progressRadialIndicatorView.readyPart = 0.00
 
         if isUserChoosedNewImage { //if it's new image
@@ -152,7 +160,9 @@ class ViewController: UIViewController, UIPopoverPresentationControllerDelegate,
                 if percentageOfCompletion == 1 {
                     if (indexObj == 0){ //if this resultObj is last in storage
                         resultImageView.image = loadImage(imageName:resultImageObjName, size:resultImageView.bounds.size)
+                        
                         progressIndicatorView.readyPart = percentageOfCompletion
+                        progressIndicatorView.hideSelfAnimated()
                         progressRadialIndicatorView.readyPart = percentageOfCompletion
                         addToCollectionCurrentImageButton.isEnabled = true
                     }
