@@ -136,16 +136,25 @@ class CustomFlowLayout: UICollectionViewFlowLayout {
 
     override func prepare() {
         super.prepare()
+        minimumLineSpacing = 2
+        minimumInteritemSpacing = 2
         if collectionView!.bounds.height < collectionView!.bounds.width {
             scrollDirection = .horizontal
-            minimumLineSpacing = 2
-            itemSize = CGSize(width: collectionView!.bounds.height-2, height: collectionView!.bounds.height-2)
+            
             sectionInset = UIEdgeInsets(top: 0, left:(collectionView!.bounds.width - collectionView!.bounds.height) / 2.0  , bottom: 0, right: 0)
         } else {
             scrollDirection = .vertical
-            minimumLineSpacing = 2
-            itemSize = CGSize(width: collectionView!.bounds.width-2, height: collectionView!.bounds.width-2)
             sectionInset = UIEdgeInsets(top: (collectionView!.bounds.height - collectionView!.bounds.width) / 2.0, left:0 , bottom: 0, right: 0)
+        }
+    }
+    
+    override func finalizeCollectionViewUpdates(){
+        if collectionView!.bounds.height < collectionView!.bounds.width {
+            let side = floor(collectionView!.bounds.height) - minimumLineSpacing - minimumInteritemSpacing
+            itemSize = CGSize(width: side, height: side)
+        } else {
+            let side = floor(collectionView!.bounds.width) - minimumLineSpacing - minimumInteritemSpacing
+            itemSize = CGSize(width: side, height: side)
         }
     }
 }
