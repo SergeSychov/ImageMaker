@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import AVFoundation
 
 //definition for saving  files
 let storageArrayName = "TaskManagerStorage.tskmng"
@@ -17,15 +18,26 @@ let workImageURL = "WorkImageURL"
 
 class ViewController: UIViewController, UIPopoverPresentationControllerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate, ResultImageObjDelegate {
 
-    @IBOutlet weak var workImageContainer: UIView!
-    @IBOutlet weak var resultImageContainer: UIView!
-    
+    @IBOutlet weak var inputImageContainer: UIView!
     @IBOutlet weak var inputImageView: SelfScaledBorderImageView!
+    @IBOutlet weak var loadRadislIndicatorView: RadialIndicatorView!
+    @IBAction func tapInputImageContainer(_ sender: UITapGestureRecognizer) {
+        self.changeLookOfChoosePictureContainer()
+    }
+    
+    
+    @IBOutlet weak var resultImageContainer: UIView!
     @IBOutlet weak var resultImageView: SelfScaledBorderImageView!
-    @IBOutlet weak var collectionOfResultImg: UICollectionView!
+        @IBOutlet weak var progressRadialIndicatorView: RadialIndicatorView!
+    
+ 
     @IBOutlet weak var loadIndicatorView: LinearIndicatorView!
     @IBOutlet weak var progressIndicatorView: LinearIndicatorView!
-    @IBOutlet weak var progressRadialIndicatorView: RadialIndicatorView!
+
+    @IBOutlet weak var collectionOfResultImg: UICollectionView!
+    //show and hide chooseImageContainer
+    @IBOutlet weak var choosePicthureContainerView: UIView!
+    
     @IBOutlet weak var addToCollectionCurrentImageButton: UIButton!
     
     var inputImageUrl: URL? //need only for save
@@ -72,7 +84,7 @@ class ViewController: UIViewController, UIPopoverPresentationControllerDelegate,
         }
         
         //add links for views to get right container rects and set border
-        inputImageView.containerView = workImageContainer
+        inputImageView.containerView = inputImageContainer
         resultImageView.containerView = resultImageContainer
         
         super.viewDidLoad()
@@ -265,12 +277,7 @@ class ViewController: UIViewController, UIPopoverPresentationControllerDelegate,
         self.dismiss(animated: true, completion: nil);
     }
 
-    //show and hide chooseImageContainer
-    @IBOutlet weak var choosePicthureContainerView: UIView!
-    @IBAction func tapWorksImageView(_ sender: UITapGestureRecognizer) {
-        self.changeLookOfChoosePictureContainer()
-    }
-    
+
     @IBAction func useButtonTapped(_ sender: Any) {
         if resImgObjNamesStorage.count > 0 {
             var cellectedCelIndexPatch = collectionOfResultImg.indexPathsForSelectedItems?.first
@@ -323,7 +330,7 @@ class ViewController: UIViewController, UIPopoverPresentationControllerDelegate,
 
     }
     
-    @IBAction func addTocollectionButtonTapped(_ sender: Any) {
+    @IBAction func addToCollectionButtonTapped(_ sender: Any) {
         
         if resImgObjNamesStorage.count > 0 {
             var cellectedCelIndexPatch = collectionOfResultImg.indexPathsForSelectedItems?.first
